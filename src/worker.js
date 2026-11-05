@@ -151,6 +151,12 @@ async function verifyPassword(password, stored) {
   for (let i = 0; i < actual.length; i++) diff |= actual.charCodeAt(i) ^ expected.charCodeAt(i);
   return diff === 0;
 }
+// Mesmo formato lido por verifyPassword: pbkdf2_sha256$iteracoes$salt$hash.
+async function hashPassword(password) {
+  const salt = crypto.getRandomValues(new Uint8Array(16));
+  const iter = 100000;
+  return `pbkdf2_sha256$${iter}$${hex(salt)}$${await pbkdf2(password, salt, iter)}`;
+}
 function getCookie(req, name) {
   for (const part of (req.headers.get('cookie') || '').split(';')) {
     const [k, ...v] = part.trim().split('=');
@@ -584,6 +590,18 @@ async function reviewReport(env, user, reportId, b) {
 }
 
 /* ==================== Cadastros e configurações ==================== */
+async function createUser(env, b) {
+  const name = reqStr(b.name, 'Nome', 2, 100);
+  const email = reqStr(b.email, 'Email', 5, 255).toLowerCase();
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) fail(400, 'Email inválido.');
+  if (!ROLE_LABEL[b.role]) fail(400, 'Escolha o perfil do usuário.');
+  const password = String(b.password || '');
+  if (password.length < 8) fail(400, 'A senha precisa ter pelo menos 8 caracteres.');
+  const exists = await env.DB.prepare('SELECT id FROM users WHERE email = ?').bind(email).first();
+  if (exists) fail(409, 'Já existe usuário com este email.');
+  await env.DB.prepare('INSERT INTO users (id, name, email, role, active, password_hash) VALUES (?, ?, ?, ?, 1, ?)')
+    .bind(uid(), name, email, b.role, await hashPassword(password)).run();
+}
 async function createClient(env, b) {
   const name = reqStr(b.name, 'Nome', 2, 100);
   const company = reqStr(b.company, 'Empresa', 2, 100);
@@ -721,6 +739,16 @@ async function route(req, env, url) {
     need(user, 'configure');
     const res = await env.DB.prepare('UPDATE clients SET active = ? WHERE id = ?').bind(b.active ? 1 : 0, seg[1]).run();
     if (!res.meta.changes) fail(404, 'Cliente não encontrado.');
+    return ok();
+  }
+  // Perfis de usuário (só o gestor). Desativar mantém o histórico e impede o login.
+  if (seg[0] === 'users' && !seg[1] && method === 'POST') { need(user, 'configure'); await createUser(env, b); return ok(201); }
+  if (seg[0] === 'users' && seg[1] && method === 'PATCH') {
+    need(user, 'configure');
+    if (seg[1] === user.id && b.active === false) fail(400, 'Você não pode desativar o próprio usuário.');
+    const res = await env.DB.prepare('UPDATE users SET active = ? WHERE id = ?').bind(b.active ? 1 : 0, seg[1]).run();
+    if (!res.meta.changes) fail(404, 'Usuário não encontrado.');
+    if (!b.active) await env.DB.prepare('DELETE FROM sessions WHERE user_id = ?').bind(seg[1]).run();
     return ok();
   }
   if (seg[0] === 'tasks' && !seg[1] && method === 'POST') { need(user, 'receive'); await createTask(env, b); return ok(201); }
