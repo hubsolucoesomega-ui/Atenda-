@@ -1,0 +1,992 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ATENDA</title>
+<link rel="icon" href="data:,">
+<style>
+:root{--bg:#f4f6f9;--surface:#fff;--s2:#eef1f6;--text:#1b2130;--muted:#5d6676;--border:#d9dee7;--primary:#2456d6;--primary-soft:#e6edfc;--ok:#1f8a4c;--ok-soft:#e5f5ec;--warn:#9a5d00;--warn-soft:#fff3dc;--danger:#c43030;--danger-soft:#fbe7e7;--shadow:0 1px 2px rgba(16,24,40,.06),0 1px 3px rgba(16,24,40,.08)}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#0f1218;--surface:#171b23;--s2:#1e2430;--text:#e7eaf0;--muted:#9aa3b2;--border:#2a3140;--primary:#7fa2ff;--primary-soft:#1d2a4a;--ok:#5fd28e;--ok-soft:#14301f;--warn:#f0b35a;--warn-soft:#352913;--danger:#ff7b7b;--danger-soft:#3a1d1d;--shadow:none}}
+:root[data-theme="dark"]{--bg:#0f1218;--surface:#171b23;--s2:#1e2430;--text:#e7eaf0;--muted:#9aa3b2;--border:#2a3140;--primary:#7fa2ff;--primary-soft:#1d2a4a;--ok:#5fd28e;--ok-soft:#14301f;--warn:#f0b35a;--warn-soft:#352913;--danger:#ff7b7b;--danger-soft:#3a1d1d;--shadow:none}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+a{color:var(--primary);text-decoration:none}
+h1{font-size:22px;margin:0 0 4px} h2{font-size:17px;margin:0 0 10px} h3{font-size:15px;margin:14px 0 8px}
+.sub{color:var(--muted);margin:0 0 16px}
+.muted{color:var(--muted);font-size:13px}
+header.top{position:sticky;top:0;z-index:5;background:var(--surface);border-bottom:1px solid var(--border)}
+.bar{display:flex;align-items:center;gap:12px;padding:10px 16px;flex-wrap:wrap}
+.brand{font-weight:800;letter-spacing:.04em;color:var(--primary);font-size:17px}
+nav{display:flex;gap:4px;overflow-x:auto;flex:1;min-width:0}
+nav a{padding:7px 10px;border-radius:8px;color:var(--text);white-space:nowrap;font-size:14px}
+nav a.on{background:var(--primary);color:#fff}
+.who{font-size:13px;color:var(--muted);display:flex;gap:8px;align-items:center}
+@media (max-width:720px){nav{order:3;width:100%;flex:none;padding-bottom:4px}}
+.wrap{max-width:1180px;margin:0 auto;padding:18px 16px 48px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px;box-shadow:var(--shadow);margin-bottom:16px}
+.grid{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}
+.kpi{background:var(--s2);border-radius:10px;padding:12px}
+.kpi strong{display:block;font-size:22px}
+.kpi span{color:var(--muted);font-size:13px}
+.two{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(300px,1fr))}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{text-align:left;padding:9px 8px;border-bottom:1px solid var(--border);vertical-align:top}
+th{color:var(--muted);font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:.03em}
+tr.link:hover td{background:var(--s2);cursor:pointer}
+.table-scroll{overflow-x:auto}
+.badge{display:inline-block;padding:2px 8px;border-radius:999px;font-size:12px;background:var(--s2);white-space:nowrap}
+.b-urg{background:var(--danger-soft);color:var(--danger)} .b-alta{background:var(--warn-soft);color:var(--warn)}
+.b-ok{background:var(--ok-soft);color:var(--ok)} .b-warn{background:var(--warn-soft);color:var(--warn)} .b-late{background:var(--danger-soft);color:var(--danger)}
+.b-pend{background:var(--warn-soft);color:var(--warn)} .b-appr{background:var(--ok-soft);color:var(--ok)} .b-ret{background:var(--danger-soft);color:var(--danger)}
+.pill-ok{color:var(--ok)} .pill-late{color:var(--danger)}
+.notice{background:var(--primary-soft);border-radius:8px;padding:10px 12px;font-size:14px;margin:0 0 12px}
+.issues{background:var(--danger-soft);color:var(--danger);border-radius:8px;padding:10px 12px;font-size:14px;margin:0 0 12px}
+.issues ul{margin:4px 0 0;padding-left:18px}
+form.stack{display:grid;gap:12px}
+form.grid2{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));align-items:end}
+label{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--muted)}
+label.inline{flex-direction:row;align-items:center;gap:6px;color:var(--text)}
+input,select,textarea{font:inherit;color:var(--text);background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:9px 10px;width:100%}
+input[type=checkbox]{width:auto}
+textarea{min-height:80px;resize:vertical}
+.btn{appearance:none;font:inherit;border:1px solid var(--border);background:var(--surface);color:var(--text);padding:9px 14px;border-radius:8px;cursor:pointer;white-space:nowrap;text-decoration:none;display:inline-block}
+.btn.primary{background:var(--primary);border-color:var(--primary);color:#fff}
+.btn.sm{padding:5px 10px;font-size:13px}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.tabs{display:flex;gap:8px;margin:0 0 14px;flex-wrap:wrap}
+.tab{padding:8px 14px;border:1px solid var(--border);border-radius:8px;background:var(--surface);color:var(--text);font:inherit;cursor:pointer}
+.tab.on{background:var(--primary);border-color:var(--primary);color:#fff}
+.bars{display:grid;gap:8px}
+.bar-row{display:grid;grid-template-columns:150px 1fr 40px;gap:10px;align-items:center;font-size:14px}
+.bar-track{background:var(--s2);border-radius:6px;height:10px;overflow:hidden}
+.bar-fill{background:var(--primary);height:100%;border-radius:6px}
+.msg{border-left:3px solid var(--border);padding:6px 10px;margin:0 0 10px}
+.msg.sys{border-color:var(--warn);background:var(--warn-soft);border-radius:6px}
+.msg.int{border-color:var(--primary)}
+.msg small{color:var(--muted)}
+.kanban{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));align-items:start}
+.col{background:var(--s2);border-radius:10px;padding:10px;min-height:120px}
+.col h3{margin:4px 2px 10px;font-size:14px}
+.cardk{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px;margin-bottom:8px}
+.cardk strong{display:block;font-size:14px}
+.dl{display:grid;gap:8px 16px;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));margin:0 0 12px}
+.dl div{background:var(--s2);border-radius:8px;padding:8px 10px}
+.dl dt{color:var(--muted);font-size:12px}
+.dl dd{margin:0;white-space:pre-wrap}
+.empty{color:var(--muted);padding:18px;text-align:center}
+.login{max-width:380px;margin:48px auto}
+.cal-wrap{overflow-x:auto}
+.cal{display:grid;grid-template-columns:repeat(7,minmax(90px,1fr));gap:1px;background:var(--border);border:1px solid var(--border);border-radius:10px;overflow:hidden;min-width:640px}
+.cal .wd{background:var(--s2);padding:6px;font-size:12px;color:var(--muted);text-align:center;font-weight:600}
+.cal .day{background:var(--surface);min-height:96px;padding:4px;font-size:12px}
+.cal .day.off{background:var(--s2)}
+.cal .dnum{font-weight:600;margin-bottom:3px}
+.cal .day.today .dnum{background:var(--primary);color:#fff;border-radius:999px;display:inline-block;padding:0 7px}
+.ev{display:block;font-size:11px;border-radius:5px;padding:2px 5px;margin:2px 0;color:var(--text);background:var(--s2);text-decoration:none;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.ev-open{background:var(--primary-soft)} .ev-prog{background:var(--warn-soft)} .ev-done{background:var(--ok-soft)} .ev-cancel{background:var(--danger-soft);text-decoration:line-through}
+#toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%) translateY(120px);background:var(--text);color:var(--surface);padding:10px 16px;border-radius:8px;transition:transform .25s;z-index:50;max-width:92vw;font-size:14px}
+#toast.show{transform:translateX(-50%) translateY(0)}
+#toast.err{background:var(--danger);color:#fff}
+.upload{display:flex;flex-direction:column;gap:6px}
+.upload input[type=file]{padding:6px}
+.opt-row{display:flex;gap:8px;align-items:center}
+.opt-row input{flex:1}
+.thumb{display:block;max-width:100%;max-height:200px;border-radius:8px;margin:4px 0}
+@media print{header.top,.no-print,#toast{display:none!important}body{background:#fff;color:#000}.card{box-shadow:none;border-color:#bbb}}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="bar">
+    <span class="brand">ATENDA</span>
+    <nav id="nav" aria-label="Módulos"></nav>
+    <div class="who" id="who"></div>
+  </div>
+</header>
+<main class="wrap" id="app"><p class="muted">Carregando…</p></main>
+<div id="toast" role="status" aria-live="polite"></div>
+
+<script>
+/* ==================== Estado e constantes ==================== */
+let S = null;                         // estado vindo de /api/state
+let STATUSES = [], PRIORITIES = [], CATEGORIES = [], SECTOR_TYPES = [], TEMPLATES = {}, ROLE_LABEL = {};
+const PERM_LABEL = {configure:'Gerenciar configurações', receive:'Receber e atender chamados', report:'Enviar relatórios', review:'Validar relatórios'};
+const ROUTES = {dashboard:'Dashboard', chamados:'Chamados', agenda:'Agenda', kanban:'Kanban', relatorios:'Relatórios', nfe:'NF-e', clientes:'Clientes', tarefas:'Tarefas', sla:'SLA', config:'Configurações'};
+const SLA_LABEL = {ok:'Em dia', warning:'Em risco', late:'Vencido'};
+const SLA_CLASS = {ok:'b-ok', warning:'b-warn', late:'b-late'};
+const PRIO_CLASS = {Urgente:'b-urg', Alta:'b-alta', Normal:'', Baixa:''};
+
+/* UI local (não persistido) */
+let CF = {q:'', status:'', cat:'', arch: false};
+let RF = '';
+let repTab = 'validacao';
+let selRep = null;
+let showClientForm = false;
+let AG = {ym: null, mode: 'mes', tec: ''};
+let G = {show:false, type:'', status:'', fmt:'resumo'};
+let busy = false;
+
+const $ = (s, r = document) => r.querySelector(s);
+const h = v => String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const brl = n => Number(n || 0).toLocaleString('pt-BR', {style:'currency', currency:'BRL'});
+const pct = (a, b) => b ? Math.round(a / b * 100) : 0;
+const digits = s => String(s || '').replace(/\D/g, '');
+const csvEsc = v => { const t = String(v ?? ''); return '"' + (/^[=+@\-]/.test(t) ? "'" + t : t).replaceAll('"', '""') + '"'; };
+const slug = s => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+const can = p => !!S && S.me.perms.includes(p);
+const agents = () => S.users.filter(u => u.active).map(u => u.name);
+const fiscalOk = () => digits(S.fiscal.cnpj).length === 14 && !!S.fiscal.legalName.trim() && S.fiscal.issRate > 0;
+
+function syncConsts() {
+  STATUSES = S.statuses; PRIORITIES = S.priorities; CATEGORIES = S.categories;
+  SECTOR_TYPES = S.sectorTypes; TEMPLATES = S.templates; ROLE_LABEL = S.roleLabels;
+}
+function toast(msg, err) {
+  const t = $('#toast'); t.textContent = msg; t.className = 'show' + (err ? ' err' : '');
+  clearTimeout(toast.t); toast.t = setTimeout(() => { t.className = ''; }, 3200);
+}
+function download(name, text, type) {
+  const url = URL.createObjectURL(new Blob([text], {type}));
+  const a = document.createElement('a'); a.href = url; a.download = name; a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+/* ==================== API ==================== */
+async function api(method, path, data) {
+  const opt = {method, credentials: 'same-origin', headers: {}};
+  if (data !== undefined) { opt.headers['content-type'] = 'application/json'; opt.body = JSON.stringify(data); }
+  const res = await fetch(path, opt);
+  let out = {}; try { out = await res.json(); } catch (e) { /* sem corpo */ }
+  if (res.status === 401 && path !== '/api/login') { S = null; renderLogin(); throw new Error(out.error || 'Sessão expirada.'); }
+  if (!res.ok) throw new Error(out.error || 'Não foi possível concluir a ação.');
+  return out;
+}
+async function refresh() { S = await api('GET', '/api/state'); syncConsts(); }
+/** Executa uma ação no servidor, recarrega o estado e redesenha a tela. */
+async function act(fn) {
+  if (busy) return;
+  busy = true;
+  try {
+    const msg = await fn();
+    await refresh();
+    if (msg) toast(msg);
+    render();
+  } catch (err) { toast(err.message, true); }
+  finally { busy = false; }
+}
+
+/* ==================== Telas ==================== */
+function selectOpts(list, cur, first) {
+  return (first !== undefined ? `<option value="">${h(first)}</option>` : '') + list.map(v => `<option value="${h(v)}" ${v === cur ? 'selected' : ''}>${h(v)}</option>`).join('');
+}
+function badgePrio(p) { return `<span class="badge ${PRIO_CLASS[p] || ''}">${h(p)}</span>`; }
+function badgeSla(sla, due) { return `<span class="badge ${SLA_CLASS[sla]}">${SLA_LABEL[sla]}</span> <span class="muted">${h(due)}</span>`; }
+function reportBadge(s) {
+  return s === 'approved' ? '<span class="badge b-appr">Validado</span>' : s === 'returned' ? '<span class="badge b-ret">Devolvido</span>' : '<span class="badge b-pend">Aguardando validação</span>';
+}
+function pageHead(title, desc, extra = '') {
+  return `<div class="actions" style="justify-content:space-between;margin-bottom:6px"><div><h1>${h(title)}</h1><p class="sub">${h(desc)}</p></div>${extra}</div>`;
+}
+function bars(entries, total) {
+  if (!entries.length) return '<div class="empty">Sem dados</div>';
+  return '<div class="bars">' + entries.map(([l, n]) => `<div class="bar-row"><span>${h(l)}</span><div class="bar-track"><div class="bar-fill" style="width:${pct(n, total)}%"></div></div><strong>${n}</strong></div>`).join('') + '</div>';
+}
+function countBy(list, fn, order) {
+  const m = new Map((order || []).map(k => [k, 0]));
+  list.forEach(x => { const k = fn(x); m.set(k, (m.get(k) || 0) + 1); });
+  return [...m.entries()].filter(([, n]) => n > 0);
+}
+function summarizeTickets(list) {
+  const total = list.length, resolved = list.filter(t => t.status === 'Resolvido').length;
+  return {total, resolved, open: total - resolved,
+    urgent: list.filter(t => t.priority === 'Urgente' || t.priority === 'Alta').length,
+    ok: list.filter(t => t.sla === 'ok').length, warning: list.filter(t => t.sla === 'warning').length, late: list.filter(t => t.sla === 'late').length};
+}
+function ticketTable(list) {
+  if (!list.length) return '<div class="empty">Nenhum chamado encontrado.</div>';
+  return `<div class="table-scroll"><table><thead><tr><th>Nº</th><th>Assunto</th><th>Cliente</th><th>Tipo</th><th>Prioridade</th><th>Status</th><th>Responsável</th><th>SLA</th></tr></thead><tbody>
+    ${list.map(t => `<tr class="link" data-go="#/chamados/${t.id}"><td>#${t.id}</td><td>${h(t.title)}</td><td>${h(t.client)}</td><td>${h(t.category)}</td><td>${badgePrio(t.priority)}</td><td>${h(t.status)}</td><td>${h(t.agent)}</td><td>${badgeSla(t.sla, t.due)}</td></tr>`).join('')}
+  </tbody></table></div>`;
+}
+function filteredTickets() {
+  const q = CF.q.toLowerCase();
+  return (CF.arch ? S.archivedTickets : S.tickets).filter(t => (!q || `${t.id} ${t.title} ${t.client}`.toLowerCase().includes(q)) && (!CF.status || t.status === CF.status) && (!CF.cat || t.category === CF.cat));
+}
+
+function dashView() {
+  const s = summarizeTickets(S.tickets);
+  const pending = S.reports.filter(r => r.status === 'pending').length;
+  return pageHead('Dashboard', 'Uma visão geral do atendimento.') + `
+    <div class="grid" style="margin-bottom:16px">
+      <div class="kpi"><strong>${s.total}</strong><span>Chamados</span></div>
+      <div class="kpi"><strong>${s.open}</strong><span>Em aberto</span></div>
+      <div class="kpi"><strong class="pill-late">${s.late}</strong><span>SLA vencido</span></div>
+      <div class="kpi"><strong>${pending}</strong><span>Relatórios aguardando validação</span></div>
+      <div class="kpi"><strong>${S.invoices.length}</strong><span>NF-e demonstrativas</span></div>
+    </div>
+    <div class="two">
+      <div class="card"><h2>Chamados por status</h2>${bars(countBy(S.tickets, t => t.status, STATUSES), s.total)}</div>
+      <div class="card"><h2>Chamados por tipo</h2>${bars(countBy(S.tickets, t => t.category, CATEGORIES), s.total)}</div>
+    </div>
+    <div class="card"><h2>Últimos chamados</h2>${ticketTable(S.tickets.slice(0, 5))}</div>`;
+}
+function chamadosView() {
+  return pageHead('Chamados', 'Receba solicitações, acompanhe conversas e conclua atendimentos.',
+    `<div class="actions"><button class="btn" data-act="csvTickets">Exportar CSV</button>${can('receive') ? '<a class="btn primary" href="#/novo">Novo chamado</a>' : ''}</div>`) + `
+    <div class="tabs no-print">${[['ativos', 'Ativos'], ['arquivados', 'Arquivados']].map(([k, l]) => `<button class="tab ${(CF.arch ? 'arquivados' : 'ativos') === k ? 'on' : ''}" data-act="chamTab" data-v="${k}">${l}</button>`).join('')}</div>
+    <div class="card">
+      <form class="grid2 no-print" style="margin-bottom:12px" onsubmit="return false">
+        <label>Buscar<input type="search" data-input="search" placeholder="Número, assunto ou cliente" value="${h(CF.q)}"></label>
+        <label>Status<select data-change="filter" data-k="status">${selectOpts(STATUSES, CF.status, 'Todos')}</select></label>
+        <label>Tipo de chamado<select data-change="filter" data-k="cat">${selectOpts(CATEGORIES, CF.cat, 'Todos')}</select></label>
+      </form>
+      <div id="ticket-rows">${ticketTable(filteredTickets())}</div>
+    </div>`;
+}
+function novoView() {
+  if (!can('receive')) return pageHead('Novo chamado', '') + '<div class="card empty">Seu perfil não abre chamados.</div>';
+  return pageHead('Novo chamado', 'Registre uma solicitação do cliente.') + `
+    <div class="card"><form class="stack" data-form="newTicket">
+      <label>Assunto<input name="title" required minlength="5" maxlength="160" placeholder="Qual é a solicitação?"></label>
+      <div class="grid2">
+        <label>Cliente<select name="client" required data-change="clientPick"><option value="">Selecione</option>${S.clients.filter(c => c.active).map(c => `<option value="${h(c.id)}">${h(c.company)}</option>`).join('')}</select></label>
+        <label>Tipo de chamado<select name="category" required><option value="">Selecione</option>${selectOpts(CATEGORIES)}</select></label>
+        <label>Setor<select name="sector" required><option value="">Selecione</option>${S.sectors.filter(s => s.active).map(s => `<option value="${h(s.id)}">${h(s.name)}</option>`).join('')}</select></label>
+        <label>Prioridade<select name="priority" required>${selectOpts(PRIORITIES, 'Normal')}</select></label>
+      </div>
+      <div id="client-info"></div>
+      <label>Descrição<textarea name="description" required maxlength="4000"></textarea></label>
+      ${S.ticketFields.length ? `<fieldset style="border:1px solid var(--border);border-radius:10px;padding:12px">
+        <legend class="muted">Informações adicionais</legend>
+        <div class="grid2">${fieldsHtml(S.ticketFields, 't_')}</div>
+      </fieldset>` : ''}
+      <fieldset style="border:1px solid var(--border);border-radius:10px;padding:12px">
+        <legend class="muted">Visita técnica</legend>
+        <label class="inline"><input type="checkbox" name="visit" data-change="toggleVisit"> Gerar agendamento na agenda ao abrir o chamado</label>
+        <div id="visit-box" style="display:none;margin-top:10px">${agendaFieldsHtml('a_')}</div>
+      </fieldset>
+      <div class="actions"><button class="btn primary" type="submit">Abrir chamado</button><a class="btn" href="#/chamados">Cancelar</a></div>
+    </form></div>`;
+}
+/* Campos dinâmicos (relatórios e chamado). prefix: 'f_' nos relatórios, 't_' no chamado. */
+function fieldsHtml(fields, prefix = 'f_', optional = false) {
+  return fields.map(f => {
+    const name = prefix + f.id;
+    const req = f.required ? 'required' : '';
+    const label = `${h(f.label)}${f.required ? ' <span style="color:var(--danger)">★</span>' : ''}`;
+    let input;
+    if (f.kind === 'textarea') input = `<textarea name="${name}" ${req}></textarea>`;
+    else if (f.kind === 'number') input = `<input type="number" step="any" min="0" name="${name}" ${req}>`;
+    else if (f.kind === 'date') input = `<input type="date" name="${name}" ${req}>`;
+    else if (f.kind === 'select') input = selectFieldHtml(f, name, req);
+    else if (f.kind === 'attachment') input = `<span class="upload"><input type="file" accept="image/*,application/pdf" data-change="upload"><input type="hidden" name="${name}"><span class="muted" data-status></span></span>`;
+    else input = `<input name="${name}" maxlength="255" ${req}>`;
+    const row = `<label>${label}${input}</label>`;
+    // Campos opcionais ficam ocultos até serem adicionados pelo "+ Mais".
+    return optional && !f.required ? `<div data-opt="${h(f.id)}" style="display:none">${row}</div>` : row;
+  }).join('');
+}
+/* Campos do relatório: obrigatórios à vista; opcionais e itens extras entram pelo "+ Mais". */
+function reportFieldsHtml(tplId) {
+  const fields = TEMPLATES[tplId].fields;
+  const optional = fields.filter(f => !f.required);
+  return `${fieldsHtml(fields, 'f_', true)}
+    <div class="stack" data-mais>
+      <label>+ Mais<select data-change="maisAdd"><option value="">Adicionar campo ou item</option>${optional.map(f => `<option value="opt:${h(f.id)}">${h(f.label)}</option>`).join('')}<option value="text">Item com texto livre</option><option value="file">Item com anexo (imagem ou PDF)</option></select></label>
+      <div data-extras class="stack"></div>
+    </div>`;
+}
+function extraRowHtml(kind) {
+  const n = ++extraSeq;
+  const valor = kind === 'attachment'
+    ? `<span class="upload"><input type="file" accept="image/*,application/pdf" data-change="upload"><input type="hidden" name="xv_${n}"><span class="muted" data-status></span></span>`
+    : `<textarea name="xv_${n}" maxlength="4000"></textarea>`;
+  return `<div class="extra-row stack" data-kind="${kind}" style="border:1px solid var(--border);border-radius:10px;padding:12px">
+    <label>Nome do item<input name="xl_${n}" maxlength="80" placeholder="Ex.: Peça trocada"></label>
+    <label>${kind === 'attachment' ? 'Anexo' : 'Texto'}${valor}</label>
+    <div class="actions"><button type="button" class="btn sm" data-act="rmExtra">Remover item</button></div>
+  </div>`;
+}
+function selectFieldHtml(f, name, req) {
+  const free = f.options.free;
+  const opts = f.options.list.map(o => `<option value="${h(o)}">${h(o)}</option>`).join('');
+  return `<select name="${name}" ${req} ${free ? 'data-change="selectFree"' : ''}><option value="">Selecione</option>${opts}${free ? '<option value="__free__">Outra (texto livre)</option>' : ''}</select>`
+    + (free ? `<input name="${name}__free" maxlength="255" placeholder="Digite a resposta" data-free-box style="display:none;margin-top:6px">` : '');
+}
+/* Lê os valores de um formulário com campos dinâmicos. */
+function collectFields(f, fields, prefix) {
+  const out = {};
+  for (const fd of fields) {
+    const el = f.elements[prefix + fd.id];
+    let v = el ? el.value : '';
+    if (fd.kind === 'select' && v === '__free__') {
+      const free = f.elements[prefix + fd.id + '__free'];
+      v = free ? free.value : '';
+    }
+    out[fd.id] = v;
+  }
+  return out;
+}
+/* Envia o arquivo assim que é escolhido; o formulário recebe só o id do anexo. */
+async function uploadFile(input) {
+  const hidden = input.parentElement.querySelector('input[type=hidden]');
+  const status = input.parentElement.querySelector('[data-status]');
+  const file = input.files[0];
+  hidden.value = '';
+  if (!file) { status.textContent = ''; return; }
+  if (file.size > MAX_UPLOAD) { input.value = ''; status.textContent = ''; toast('Arquivo acima de 5 MB.', true); return; }
+  status.textContent = 'Enviando…';
+  try {
+    const res = await fetch('/api/attachments', {method: 'POST', credentials: 'same-origin',
+      headers: {'content-type': file.type || 'application/octet-stream', 'x-filename': encodeURIComponent(file.name)}, body: file});
+    const out = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(out.error || 'Não foi possível enviar o arquivo.');
+    hidden.value = out.id;
+    status.textContent = `✓ ${out.name}`;
+  } catch (err) { input.value = ''; status.textContent = ''; toast(err.message, true); }
+}
+function attachHtml(id) {
+  const a = S.attachments.find(x => x.id === id);
+  if (!a) return '<span class="muted">Anexo indisponível</span>';
+  const url = `/api/attachments/${a.id}`;
+  const thumb = a.mime.startsWith('image/') ? `<a href="${url}" target="_blank" rel="noopener"><img class="thumb" src="${url}" alt="${h(a.name)}"></a>` : '';
+  return `${thumb}<a href="${url}" target="_blank" rel="noopener">${h(a.name)}</a> <span class="muted">(${Math.max(1, Math.round(a.size / 1024))} KB)</span>`;
+}
+/* Valor de um campo para exibição (já escapado). */
+function valueHtml(f, v) {
+  if (!v) return '—';
+  return f.kind === 'attachment' ? attachHtml(v) : h(v);
+}
+function clientCardHtml(c) {
+  if (!c) return '';
+  return `<div class="dl" style="margin:0 0 12px"><div><dt>Contato</dt><dd>${h(c.name)}</dd></div><div><dt>Email</dt><dd>${h(c.email || '—')}</dd></div><div><dt>Telefone</dt><dd>${h(c.phone || '—')}</dd></div><div><dt>CNPJ/CPF</dt><dd>${h(c.doc || '—')}</dd></div><div><dt>Endereço</dt><dd>${h(c.address || '—')}</dd></div></div>`;
+}
+/* Dados do chamado: cliente, solicitação, setor e campos personalizados. */
+function ticketInfoBody(t) {
+  const c = S.clients.find(x => x.company === t.client) || {};
+  const sector = S.sectors.find(s => s.id === t.sectorId);
+  const first = t.messages.find(m => !m.system && !m.internal);
+  const custom = t.custom || {};
+  return `<div class="dl">
+      <div><dt>Empresa</dt><dd>${h(t.client)}</dd></div>
+      <div><dt>Contato</dt><dd>${h(c.name || '—')}</dd></div>
+      <div><dt>Email</dt><dd>${h(c.email || '—')}</dd></div>
+      <div><dt>Telefone</dt><dd>${h(c.phone || '—')}</dd></div>
+      <div><dt>CNPJ/CPF</dt><dd>${h(c.doc || '—')}</dd></div>
+      <div><dt>Endereço</dt><dd>${h(c.address || '—')}</dd></div>
+      <div><dt>Tipo de chamado</dt><dd>${h(t.category)}</dd></div>
+      <div><dt>Setor</dt><dd>${h(sector ? sector.name : '—')}</dd></div>
+      ${S.ticketFields.map(f => `<div><dt>${h(f.label)}</dt><dd>${valueHtml(f, custom[f.id])}</dd></div>`).join('')}
+    </div>
+    ${first ? `<h3>Solicitação do cliente</h3><div class="msg">${h(first.body)}</div>` : ''}`;
+}
+/* Botão que abre o WhatsApp com o texto pronto avisando que o chamado foi aberto. */
+function whatsappHtml(t) {
+  const c = S.clients.find(x => x.company === t.client) || {};
+  const digits = String(c.phone || '').replace(/\D/g, '');
+  if (!digits) return '<p class="muted" style="margin-top:12px">Cadastre o telefone do cliente para enviar aviso pelo WhatsApp.</p>';
+  const num = digits.length === 10 || digits.length === 11 ? '55' + digits : digits;
+  const msg = `Olá, ${c.name || ''}! Seu chamado #${t.id} (“${t.title}”) foi aberto com sucesso. Em breve nossa equipe dará continuidade. ATENDA`;
+  return `<div class="actions" style="margin-top:12px"><a class="btn" target="_blank" rel="noopener" href="${h(`https://wa.me/${num}?text=${encodeURIComponent(msg)}`)}">Enviar aviso pelo WhatsApp</a></div>`;
+}
+/* Contexto completo para validar o relatório: chamado, agenda e últimas mensagens. */
+function contextoHtml(r) {
+  const t = S.tickets.find(x => x.id === r.ticketId);
+  if (!t) return '';
+  const visits = S.agenda.filter(a => a.ticketId === t.id);
+  const msgs = t.messages.filter(m => !m.internal).slice(-6);
+  return `<h3>Contexto do chamado</h3>${ticketInfoBody(t)}
+    <div class="two" style="margin-top:12px"><div><h3>Agenda</h3>${visits.length ? visits.map(a => `<div class="msg"><strong>${fmtDate(a.date)} · ${h(a.time)}</strong> ${h(a.taskType)}<div class="muted">${h(a.technician)} · ${h(a.status)}</div></div>`).join('') : '<div class="muted">Sem visitas agendadas.</div>'}</div>
+    <div><h3>Últimas mensagens</h3>${msgs.map(m => `<div class="msg ${m.system ? 'sys' : ''}"><strong>${h(m.author)}</strong> <small>${h(m.time)}</small><div>${h(m.body)}</div></div>`).join('') || '<div class="muted">Sem mensagens.</div>'}</div></div>`;
+}
+/* Formulário de criação de campo (relatório ou chamado), com opções em lista. */
+const optRowHtml = () => `<div class="opt-row"><input name="opt" maxlength="80" placeholder="Opção"><button type="button" class="btn sm" data-act="rmOpt">Remover</button></div>`;
+function fieldAdderHtml(scope) {
+  const tpl = scope === 'report' ? `<label>Relatório<select name="template">${Object.entries(TEMPLATES).map(([tid, t]) => `<option value="${tid}">${h(t.name)}</option>`).join('')}</select></label>` : '';
+  return `<form class="stack" data-form="addField" data-scope="${scope}">
+    <div class="grid2">${tpl}
+      <label>Nome do campo<input name="label" required minlength="2" maxlength="80"></label>
+      <label>Categoria do campo<select name="kind" data-change="kindChange">${Object.entries(FIELD_KINDS).map(([k, l]) => `<option value="${k}">${l}</option>`).join('')}</select></label>
+      <label class="inline"><input type="checkbox" name="required"> Obrigatório</label>
+    </div>
+    <div data-opts-box class="stack" style="display:none">
+      <strong style="font-size:14px">O que será incluso na lista</strong>
+      <div data-opts class="stack">${optRowHtml()}${optRowHtml()}</div>
+      <div class="actions"><button type="button" class="btn sm" data-act="addOpt">+ Adicionar opção</button>
+        <label class="inline"><input type="checkbox" name="free"> Permitir texto livre (opção "Outra")</label></div>
+    </div>
+    <div class="actions"><button class="btn primary" type="submit">Adicionar campo</button></div>
+  </form>`;
+}
+function fieldRowsHtml(fields, scope, tid, c) {
+  if (!fields.length) return '<tr><td class="muted">Nenhum campo.</td></tr>';
+  return fields.map(f => {
+    const opts = f.kind === 'select' ? `<div>${h(f.options.list.join(' · ') || 'sem opções')}${f.options.free ? ' · texto livre' : ''}</div>` : '';
+    const edit = c && f.kind === 'select' ? `<button class="btn sm" data-act="editOpts" data-scope="${scope}" data-template="${h(tid)}" data-id="${h(f.id)}">Opções</button> ` : '';
+    const del = c && !(scope === 'report' && f.id === 'value') ? `<button class="btn sm" data-act="delField" data-scope="${scope}" data-template="${h(tid)}" data-id="${h(f.id)}">Excluir</button>` : '';
+    return `<tr><td>${h(f.label)}${f.required ? ' ★' : ''}</td><td class="muted">${h(FIELD_KINDS[f.kind] || f.kind)}${opts}</td><td style="text-align:right;white-space:nowrap">${edit}${del}</td></tr>`;
+  }).join('');
+}
+function detalheView(id) {
+  const t = [...S.tickets, ...S.archivedTickets].find(x => x.id === Number(id));
+  if (!t) return `<div class="card"><h2>Chamado não encontrado</h2><a href="#/chamados">Voltar aos chamados</a></div>`;
+  const reps = S.reports.filter(r => r.ticketId === t.id);
+  const canClose = !t.archived && t.status !== 'Resolvido' && can('report') && !reps.some(r => r.status !== 'returned');
+  return `<p class="muted"><a href="#/chamados">Chamados</a> / #${t.id}</p>
+    ${pageHead(`#${t.id} · ${t.title}`, `${t.client} · ${t.category}`)}
+    ${t.archived ? '<div class="notice">Este chamado está arquivado. Restaure-o para continuar o atendimento.</div>' : ''}
+    ${can('configure') ? `<div class="actions" style="margin-bottom:12px"><button class="btn sm" data-act="archiveTicket" data-id="${t.id}" data-v="${t.archived ? '0' : '1'}">${t.archived ? 'Restaurar chamado' : 'Arquivar chamado'}</button></div>` : ''}
+    <div class="dl">
+      <div><dt>Status</dt><dd><select data-change="setStatus" data-id="${t.id}" ${can('receive') ? '' : 'disabled'}>${selectOpts(STATUSES, t.status)}</select></dd></div>
+      <div><dt>Responsável</dt><dd><select data-change="setAgent" data-id="${t.id}" ${can('receive') ? '' : 'disabled'}>${selectOpts(agents(), t.agent, 'Não atribuído')}</select></dd></div>
+      <div><dt>Prioridade</dt><dd>${badgePrio(t.priority)}</dd></div>
+      <div><dt>Equipe</dt><dd>${h(t.team)}</dd></div>
+      <div><dt>SLA</dt><dd>${badgeSla(t.sla, t.due)}</dd></div>
+      <div><dt>Criado em</dt><dd>${h(t.created)}</dd></div>
+    </div>
+    <div class="card"><h2>Informações do chamado</h2>${ticketInfoBody(t)}${whatsappHtml(t)}</div>
+    ${agendaTicketHtml(t)}
+    <div class="two">
+      <div class="card">
+        <h2>Conversa</h2>
+        ${t.messages.map(m => `<div class="msg ${m.system ? 'sys' : ''} ${m.internal ? 'int' : ''}"><strong>${h(m.author)}</strong> <small>${h(m.time)}${m.internal ? ' · interna' : ''}</small><div>${h(m.body)}</div></div>`).join('')}
+        ${can('receive') && !t.archived && t.status !== 'Resolvido' ? `<form class="stack" data-form="reply" data-id="${t.id}" style="margin-top:12px">
+          <textarea name="body" required maxlength="4000" placeholder="Escreva uma resposta"></textarea>
+          <div class="actions"><label class="inline"><input type="checkbox" name="internal"> Nota interna</label><button class="btn primary" type="submit">Enviar</button></div>
+        </form>` : ''}
+      </div>
+      <div class="card">
+        <h2>Relatórios de encerramento</h2>
+        ${reps.length ? reps.map(r => `<div class="msg"><strong>${h(r.templateName)}</strong> · ${h(r.serviceCode)} ${h(r.serviceName)}<div>${reportBadge(r.status)} <small>por ${h(r.authorName)}</small></div></div>`).join('') : '<div class="muted">Nenhum relatório enviado.</div>'}
+        ${canClose ? `<h3>Encerrar com relatório</h3>
+          <form class="stack" data-form="report" data-id="${t.id}">
+            <label>Tipo de relatório<select name="tpl" data-change="tplChange">${Object.entries(TEMPLATES).map(([k, v]) => `<option value="${k}">${h(v.name)}</option>`).join('')}</select></label>
+            <label>Tipo de serviço<select name="svc" required><option value="">Selecione</option>${S.services.filter(s => s.active).map(s => `<option value="${h(s.id)}">${h(s.code)} · ${h(s.name)}</option>`).join('')}</select></label>
+            <div id="repFields" class="stack">${reportFieldsHtml('service')}</div>
+            <button class="btn primary" type="submit">Enviar para validação</button>
+          </form>` : (t.status === 'Resolvido' ? '<div class="muted">Chamado resolvido.</div>' : (can('report') ? '' : '<div class="muted">Seu perfil não envia relatórios.</div>'))}
+      </div>
+    </div>`;
+}
+const AGENDA_TYPES = ['Manutenção Preventiva', 'Manutenção Corretiva', 'Instalação', 'Visita técnica'];
+const AGENDA_STATUS = ['Aberta', 'Em andamento', 'Concluída', 'Cancelada'];
+const FIELD_KINDS = {text: 'Texto', textarea: 'Texto longo', date: 'Data', number: 'Número', select: 'Lista de opções', attachment: 'Anexo (imagem ou PDF)'};
+const MAX_UPLOAD = 5 * 1024 * 1024;
+const MAX_EXTRAS = 5;
+let extraSeq = 0;
+const AG_STATUS_CLASS = {'Aberta': 'ev-open', 'Em andamento': 'ev-prog', 'Concluída': 'ev-done', 'Cancelada': 'ev-cancel'};
+const MESES = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+function todayIso() { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; }
+function fmtDate(iso) { return iso.split('-').reverse().join('/'); }
+function agendaFieldsHtml(p) {
+  return `<div class="grid2">
+    <label>Tipo de tarefa<select name="${p}type">${selectOpts(AGENDA_TYPES, AGENDA_TYPES[0])}</select></label>
+    <label>Data<input type="date" name="${p}date" value="${todayIso()}"></label>
+    <label>Hora<input type="time" name="${p}time" value="09:00"></label>
+    <label>Técnico<select name="${p}technician">${selectOpts(agents(), S.me.name, 'Selecione')}</select></label>
+    <label style="grid-column:1/-1">Endereço (em branco usa o endereço do cliente)<input name="${p}address" maxlength="255" placeholder="Rua, número, bairro, cidade"></label>
+  </div>`;
+}
+function agendaPayload(f, p) {
+  return {taskType: f.elements[p + 'type'].value, date: f.elements[p + 'date'].value, time: f.elements[p + 'time'].value,
+    technician: f.elements[p + 'technician'].value, address: f.elements[p + 'address'].value};
+}
+function agendaTicketHtml(t) {
+  const items = S.agenda.filter(a => a.ticketId === t.id);
+  return `<div class="card"><h2>Agenda deste chamado</h2>
+    ${items.length ? items.map(a => `<div class="cardk" style="display:flex;gap:10px;justify-content:space-between;flex-wrap:wrap;align-items:center">
+      <div><strong>${fmtDate(a.date)} · ${h(a.time)}</strong> · ${h(a.taskType)}<div class="muted">${h(a.technician)} · ${h(a.address || 'Sem endereço')}</div></div>
+      <select data-change="agendaStatus" data-id="${h(a.id)}" aria-label="Status do agendamento" ${can('receive') ? '' : 'disabled'}>${selectOpts(AGENDA_STATUS, a.status)}</select></div>`).join('') : '<div class="muted">Nenhuma visita agendada.</div>'}
+    ${can('receive') && !t.archived && t.status !== 'Resolvido' ? `<h3>Agendar visita</h3><form class="stack" data-form="agenda" data-id="${t.id}">${agendaFieldsHtml('a_')}<div class="actions"><button class="btn primary" type="submit">Agendar</button></div></form>` : ''}
+  </div>`;
+}
+function agendaView() {
+  if (!AG.ym) AG.ym = todayIso().slice(0, 7);
+  const [y, m] = AG.ym.split('-').map(Number);
+  const items = S.agenda.filter(a => !AG.tec || a.technician === AG.tec);
+  const head = pageHead('Agenda', 'Visitas e tarefas de campo geradas pelos chamados.', `<div class="actions">
+    <button class="btn ${AG.mode === 'mes' ? 'primary' : ''}" data-act="agMode" data-v="mes">Mês</button>
+    <button class="btn ${AG.mode === 'lista' ? 'primary' : ''}" data-act="agMode" data-v="lista">Lista</button></div>`);
+  const bar = `<div class="card"><div class="grid2" style="align-items:end">
+    <label>Técnico<select data-change="agTec">${selectOpts(agents(), AG.tec, 'Todos os técnicos')}</select></label>
+    <div class="actions"><button class="btn" data-act="agNav" data-v="-1">‹ Anterior</button>
+      <strong style="min-width:160px;text-align:center">${MESES[m - 1]} de ${y}</strong>
+      <button class="btn" data-act="agNav" data-v="1">Próximo ›</button>
+      <button class="btn" data-act="agNav" data-v="0">Hoje</button></div></div></div>`;
+  const legend = `<div class="actions" style="margin:-4px 0 12px">${Object.keys(AG_STATUS_CLASS).map(s => `<span class="ev ${AG_STATUS_CLASS[s]}" style="display:inline-block">${s}</span>`).join('')}</div>`;
+  if (AG.mode === 'lista') {
+    const monthItems = items.filter(a => a.date.startsWith(AG.ym)).sort((a, b) => (a.date + a.time).localeCompare(b.date + b.time));
+    return head + bar + legend + `<div class="card">${monthItems.length ? `<div class="table-scroll"><table><thead><tr><th>Data</th><th>Hora</th><th>Cliente</th><th>Chamado</th><th>Tipo de tarefa</th><th>Técnico</th><th>Endereço</th><th>Status</th></tr></thead><tbody>
+      ${monthItems.map(a => `<tr class="link" data-go="#/chamados/${a.ticketId}"><td>${fmtDate(a.date)}</td><td>${h(a.time)}</td><td>${h(a.client)}</td><td>#${a.ticketId}</td><td>${h(a.taskType)}</td><td>${h(a.technician)}</td><td>${h(a.address)}</td><td><span class="ev ${AG_STATUS_CLASS[a.status]}">${h(a.status)}</span></td></tr>`).join('')}
+      </tbody></table></div>` : '<div class="empty">Nenhuma visita neste mês.</div>'}</div>`;
+  }
+  const byDay = {};
+  items.forEach(a => { (byDay[a.date] ||= []).push(a); });
+  const lead = new Date(y, m - 1, 1).getDay(), days = new Date(y, m, 0).getDate();
+  const cells = [];
+  for (let i = 0; i < lead; i++) cells.push('<div class="day off"></div>');
+  for (let d = 1; d <= days; d++) {
+    const iso = `${AG.ym}-${String(d).padStart(2, '0')}`;
+    const list = (byDay[iso] || []).sort((a, b) => a.time.localeCompare(b.time));
+    cells.push(`<div class="day ${iso === todayIso() ? 'today' : ''}"><div class="dnum">${d}</div>${list.map(a => `<a class="ev ${AG_STATUS_CLASS[a.status]}" href="#/chamados/${a.ticketId}" title="${h(a.taskType)} · ${h(a.client)} · ${h(a.technician)}"><strong>${h(a.time)}</strong> ${h(a.client)}</a>`).join('')}</div>`);
+  }
+  return head + bar + legend + `<div class="cal-wrap"><div class="cal">${['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'].map(w => `<div class="wd">${w}</div>`).join('')}${cells.join('')}</div></div>`;
+}
+
+function kanbanView() {
+  return pageHead('Kanban', 'Mova os chamados entre as etapas do atendimento.') +
+    `<div class="kanban">${STATUSES.map(st => {
+      const list = S.tickets.filter(t => t.status === st);
+      return `<section class="col"><h3>${h(st)} <span class="muted">(${list.length})</span></h3>${list.map(t => `<div class="cardk"><a href="#/chamados/${t.id}"><strong>#${t.id} · ${h(t.title)}</strong></a><div class="muted">${h(t.client)} · ${h(t.category)}</div><div style="margin:6px 0">${badgePrio(t.priority)}</div>
+        <select data-change="moveTicket" data-id="${t.id}" aria-label="Mover chamado ${t.id}" ${can('receive') ? '' : 'disabled'}>${selectOpts(STATUSES, t.status)}</select>${can('configure') ? `<button class="btn sm" data-act="archiveTicket" data-id="${t.id}" data-v="1" style="margin-top:6px">Arquivar</button>` : ''}</div>`).join('') || '<div class="muted">Nenhum</div>'}</section>`;
+    }).join('')}</div>`;
+}
+function clientIssues(r) {
+  const issues = r.fields.filter(f => f.required && !String(r.values[f.id] || '').trim()).map(f => `Campo obrigatório vazio: ${f.label}.`);
+  if (!(Number(r.values.value) > 0)) issues.push('O relatório precisa de um "Valor (R$)" maior que zero.');
+  if (!fiscalOk()) issues.push('Dados fiscais incompletos ou CNPJ inválido (Configurações → Dados fiscais).');
+  if (!r.serviceName) issues.push('Tipo de serviço não informado.');
+  return issues;
+}
+function canReview(r) { return r.status === 'pending' && r.authorId !== S.me.id && can('review'); }
+function relatoriosView() {
+  const tabs = `<div class="tabs no-print">${[['validacao', 'Validação'], ['tipo', 'Por tipo de chamado']].map(([k, l]) => `<button class="tab ${repTab === k ? 'on' : ''}" data-act="repTab" data-v="${k}">${l}</button>`).join('')}</div>`;
+  return pageHead('Relatórios', repTab === 'validacao' ? 'Revise os encerramentos antes de concluir o atendimento.' : 'Relatórios e indicadores agrupados pelo tipo de chamado.') + tabs + (repTab === 'validacao' ? validacaoView() : tipoView());
+}
+function validacaoView() {
+  const rows = S.reports.filter(r => !RF || r.status === RF);
+  const sel = selRep ? S.reports.find(r => r.id === selRep) : null;
+  return `<div class="card">
+    <label style="max-width:260px;margin-bottom:12px">Status<select data-change="filterRep"><option value="">Todos</option><option value="pending" ${RF === 'pending' ? 'selected' : ''}>Aguardando validação</option><option value="approved" ${RF === 'approved' ? 'selected' : ''}>Validado</option><option value="returned" ${RF === 'returned' ? 'selected' : ''}>Devolvido</option></select></label>
+    ${rows.length ? `<div class="table-scroll"><table><thead><tr><th>Chamado</th><th>Tipo de relatório</th><th>Tipo de chamado</th><th>Autor</th><th>Enviado em</th><th>Status</th><th>Validador</th><th></th></tr></thead><tbody>
+      ${rows.map(r => `<tr><td>#${r.ticketId}</td><td>${h(r.templateName)}</td><td>${h(r.ticketCategory)}</td><td>${h(r.authorName)}</td><td>${h(new Date(r.submittedAt).toLocaleString('pt-BR'))}</td><td>${reportBadge(r.status)}</td><td>${h(r.reviewerName || '—')}</td><td><button class="btn sm" data-act="pickReport" data-id="${r.id}">Revisar</button></td></tr>`).join('')}
+    </tbody></table></div>` : '<div class="empty">Nenhum relatório neste momento. Os relatórios enviados no encerramento dos chamados aparecem aqui.</div>'}
+  </div>
+  ${sel ? reviewPanel(sel) : ''}`;
+}
+function reviewPanel(r) {
+  const issues = r.status === 'pending' ? clientIssues(r) : [];
+  const ok = canReview(r);
+  return `<div class="card" id="review">
+    <div class="actions" style="justify-content:space-between"><h2>Relatório do chamado #${r.ticketId}</h2><button class="btn sm" data-act="closeReview">Fechar</button></div>
+    <p class="muted">${h(r.authorName)} · ${h(r.templateName)}${r.serviceName ? ` · ${h(r.serviceCode)} ${h(r.serviceName)}` : ''} · tipo de chamado: ${h(r.ticketCategory)}</p>
+    ${r.status === 'pending' ? (issues.length ? `<div class="issues"><strong>Pendências para gerar NF-e:</strong><ul>${issues.map(i => `<li>${h(i)}</li>`).join('')}</ul></div>` : '<div class="notice">Pronto para gerar NF-e demonstrativa.</div>') : ''}
+    <dl class="dl">${r.fields.map(f => `<div><dt>${h(f.label)}</dt><dd>${valueHtml(f, r.values[f.id])}</dd></div>`).join('')}</dl>
+    ${contextoHtml(r)}
+    ${r.feedback ? `<div class="notice">${h(r.feedback)}</div>` : ''}
+    ${r.status !== 'pending' ? '' : ok ? `<form class="stack" data-form="review" data-id="${r.id}">
+        <label>Observação da revisão<textarea name="feedback" maxlength="2000"></textarea></label>
+        <div class="actions"><button class="btn" name="decision" value="return" type="submit">Devolver</button><button class="btn primary" name="decision" value="approve" type="submit">Validar relatório</button></div>
+      </form>` : `<div class="notice">${r.authorId === S.me.id ? 'O autor não pode validar o próprio relatório.' : 'Seu perfil não possui permissão de validação.'} A revisão deve ser feita por outro usuário ativo, com perfil de validador.</div>`}
+  </div>`;
+}
+function tipoView() {
+  const cats = [...new Set(S.tickets.map(t => t.category))].sort((a, b) => a.localeCompare(b, 'pt-BR'));
+  const rows = cats.map(cat => {
+    const list = S.tickets.filter(t => t.category === cat);
+    const s = summarizeTickets(list);
+    const reps = S.reports.filter(r => r.ticketCategory === cat);
+    return `<tr class="link" data-act="genType" data-v="${h(cat)}"><td><strong>${h(cat)}</strong></td><td>${s.total}</td><td>${s.open}</td><td>${s.resolved}</td><td class="${s.late ? 'pill-late' : ''}">${s.late}</td><td>${reps.length}</td><td>${reps.filter(r => r.status === 'approved').length}</td></tr>`;
+  }).join('');
+  return `<div class="card">
+    <h2>Visão geral por tipo de chamado</h2>
+    <div class="table-scroll"><table><thead><tr><th>Tipo de chamado</th><th>Total</th><th>Abertos</th><th>Resolvidos</th><th>SLA vencido</th><th>Relatórios</th><th>Validados</th></tr></thead><tbody>${rows}</tbody></table></div>
+    <p class="muted">Clique numa linha para gerar o relatório daquele tipo.</p>
+  </div>
+  <div class="card">
+    <h2>Criar relatório</h2>
+    <form class="grid2" data-form="gen">
+      <label>Tipo de chamado<select name="type"><option value="">Todos os tipos</option>${selectOpts(cats, G.type)}</select></label>
+      <label>Status do chamado<select name="status"><option value="">Todos</option>${selectOpts(STATUSES, G.status)}</select></label>
+      <label>Formato<select name="fmt"><option value="resumo" ${G.fmt === 'resumo' ? 'selected' : ''}>Resumo</option><option value="detalhado" ${G.fmt === 'detalhado' ? 'selected' : ''}>Detalhado (com lista)</option></select></label>
+      <button class="btn primary" type="submit">Gerar relatório</button>
+    </form>
+    ${G.show ? genReportHtml() : ''}
+  </div>`;
+}
+function genReportHtml() {
+  const list = S.tickets.filter(t => (!G.type || t.category === G.type) && (!G.status || t.status === G.status)).sort((a, b) => a.id - b.id);
+  const s = summarizeTickets(list);
+  const ids = new Set(list.map(t => t.id));
+  const reps = S.reports.filter(r => ids.has(r.ticketId));
+  return `<div class="actions" style="justify-content:space-between;margin:14px 0 8px"><h3 style="margin:0">Relatório — ${h(G.type || 'Todos os tipos')}</h3><span class="muted">Dados de ${h(new Date().toLocaleString('pt-BR'))}${G.status ? ' · status: ' + h(G.status) : ''}</span></div>
+    <div class="grid" style="margin-bottom:14px">
+      <div class="kpi"><strong>${s.total}</strong><span>Chamados</span></div>
+      <div class="kpi"><strong>${s.open}</strong><span>Em aberto</span></div>
+      <div class="kpi"><strong>${s.resolved}</strong><span>Resolvidos</span></div>
+      <div class="kpi"><strong>${s.urgent}</strong><span>Urgentes ou altos</span></div>
+      <div class="kpi"><strong class="pill-ok">${pct(s.ok, s.total)}%</strong><span>SLA em dia</span></div>
+      <div class="kpi"><strong>${reps.filter(r => r.status === 'approved').length}/${reps.length}</strong><span>Relatórios validados</span></div>
+    </div>
+    <div class="two">
+      <div><h3>Por status</h3>${bars(countBy(list, t => t.status, STATUSES), s.total)}</div>
+      <div><h3>Por prioridade</h3>${bars(countBy(list, t => t.priority, PRIORITIES), s.total)}</div>
+      <div><h3>Por responsável</h3>${bars(countBy(list, t => t.agent), s.total)}</div>
+      <div><h3>Por equipe</h3>${bars(countBy(list, t => t.team), s.total)}</div>
+    </div>
+    ${G.fmt === 'detalhado' ? `<h3>Chamados</h3>${ticketTable(list)}` : ''}
+    <div class="actions no-print" style="margin-top:14px"><button class="btn" data-act="csvReport">Baixar CSV</button><button class="btn" data-act="printReport">Imprimir / salvar em PDF</button></div>`;
+}
+function nfeView() {
+  return pageHead('NF-e', 'Notas geradas a partir de relatórios validados. Simulação, sem validade fiscal.') + `
+    <div class="notice">Documentos demonstrativos. A emissão real depende de um serviço fiscal conectado.</div>
+    <div class="card">${S.invoices.length ? `<div class="table-scroll"><table><thead><tr><th>Nº</th><th>Chamado</th><th>Cliente</th><th>Serviço</th><th>Base</th><th>ISS</th><th>Líquido</th><th>Status</th></tr></thead><tbody>
+      ${S.invoices.map(n => `<tr><td>${n.number}</td><td>#${n.ticketId}</td><td>${h(n.client)}</td><td>${h(n.serviceCode)} ${h(n.serviceName)}</td><td>${brl(n.base)}</td><td>${brl(n.iss)} <span class="muted">(${n.issRate}%)</span></td><td>${brl(n.net)}</td><td><span class="badge">${h(n.status)}</span></td></tr>`).join('')}
+    </tbody></table></div>` : '<div class="empty">Nenhuma NF-e gerada. Valide um relatório para gerar uma.</div>'}</div>`;
+}
+function clientesView() {
+  return pageHead('Clientes', 'Relacionamentos bem cuidados.', can('receive') ? `<button class="btn primary" data-act="toggleClientForm">${showClientForm ? 'Fechar' : 'Novo cliente'}</button>` : '') +
+    (showClientForm && can('receive') ? `<div class="card"><form class="grid2" data-form="client">
+      <label>Nome<input name="name" required minlength="2" maxlength="100"></label>
+      <label>Empresa<input name="company" required minlength="2" maxlength="100"></label>
+      <label>Email<input type="email" name="email" maxlength="255"></label>
+      <label>Telefone<input name="phone" maxlength="30"></label>
+      <label>CNPJ/CPF<input name="doc" maxlength="20"></label>
+      <label>Endereço<input name="address" maxlength="255" placeholder="Rua, número, bairro, cidade"></label>
+      <button class="btn primary" type="submit">Salvar cliente</button></form></div>` : '') +
+    `<div class="card"><p class="muted" style="margin-top:0">Cada cliente tem um link próprio para abrir chamados. “Novo link” invalida o anterior.</p><div class="table-scroll"><table><thead><tr><th>Cliente</th><th>Empresa</th><th>Email</th><th>Telefone</th><th>Documento</th><th>Chamados</th><th>Status</th><th></th></tr></thead><tbody>
+    ${S.clients.map(c => `<tr><td>${h(c.name)}</td><td>${h(c.company)}</td><td>${h(c.email)}</td><td>${h(c.phone)}</td><td>${h(c.doc)}</td><td>${S.tickets.filter(t => t.client === c.company).length}</td><td><span class="badge ${c.active ? 'b-ok' : ''}">${c.active ? 'Ativo' : 'Arquivado'}</span></td><td style="white-space:nowrap">${can('receive') && c.active ? `<button class="btn sm" data-act="copyLink" data-token="${h(c.linkToken)}">Copiar link</button> <button class="btn sm" data-act="newLink" data-id="${h(c.id)}">Novo link</button> ` : ''}${can('configure') ? `<button class="btn sm" data-act="toggleClient" data-id="${h(c.id)}" data-v="${c.active ? '0' : '1'}">${c.active ? 'Arquivar' : 'Reativar'}</button>` : ''}</td></tr>`).join('')}
+    </tbody></table></div></div>`;
+}
+function tarefasView() {
+  const open = S.tickets.filter(t => t.status !== 'Resolvido');
+  return pageHead('Tarefas', 'Transforme solicitações em próximos passos claros.') + `
+    <div class="card">${S.tasks.length ? S.tasks.map(t => `<div class="cardk" style="display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap">
+      <div><button class="btn sm" data-act="toggleTask" data-id="${h(t.id)}" aria-pressed="${t.done}" ${can('receive') ? '' : 'disabled'}>${t.done ? '✓ Concluída' : 'Concluir'}</button></div>
+      <div style="flex:1;min-width:200px"><strong style="${t.done ? 'text-decoration:line-through;color:var(--muted)' : ''}">${h(t.title)}</strong><div class="muted">${h(t.agent)} · ${h(t.due.split('-').reverse().join('/'))} · chamado #${t.ticket}</div></div>
+      <div>${badgePrio(t.priority)} ${can('configure') ? `<button class="btn sm" data-act="archTask" data-id="${h(t.id)}" data-v="1">Arquivar</button>` : ''}</div></div>`).join('') : '<div class="empty">Nenhuma tarefa.</div>'}</div>
+    ${can('configure') && S.archivedTasks.length ? `<div class="card"><h2>Tarefas arquivadas</h2>${S.archivedTasks.map(t => `<div class="cardk" style="display:flex;gap:12px;justify-content:space-between;flex-wrap:wrap;align-items:center"><div><strong>${h(t.title)}</strong><div class="muted">${h(t.agent)} · chamado #${t.ticket}</div></div><button class="btn sm" data-act="archTask" data-id="${h(t.id)}" data-v="0">Restaurar</button></div>`).join('')}</div>` : ''}
+    ${can('receive') ? `<div class="card"><h2>Nova tarefa</h2><form class="grid2" data-form="task">
+      <label>Título<input name="title" required minlength="3" maxlength="160"></label>
+      <label>Responsável<select name="agent" required>${selectOpts(agents())}</select></label>
+      <label>Prazo<input type="date" name="due" required></label>
+      <label>Prioridade<select name="priority">${selectOpts(PRIORITIES, 'Normal')}</select></label>
+      <label>Chamado<select name="ticket" required>${open.map(t => `<option value="${t.id}">#${t.id} · ${h(t.title)}</option>`).join('')}</select></label>
+      <button class="btn primary" type="submit">Criar tarefa</button></form></div>` : ''}`;
+}
+function slaView() {
+  const s = summarizeTickets(S.tickets);
+  return pageHead('SLA', 'Prazos por prioridade. Os indicadores são calculados a partir dos chamados.') + `
+    <div class="grid" style="margin-bottom:16px">
+      <div class="kpi"><strong class="pill-ok">${pct(s.ok, s.total)}%</strong><span>SLA em dia</span></div>
+      <div class="kpi"><strong>${s.warning}</strong><span>Em risco</span></div>
+      <div class="kpi"><strong class="pill-late">${s.late}</strong><span>Vencidos</span></div>
+      <div class="kpi"><strong>${s.open}</strong><span>Chamados em aberto</span></div>
+    </div>
+    <div class="card"><h2>Políticas de atendimento</h2><p class="muted" style="margin-top:0">Os valores de resolução são exemplos deste protótipo, não do projeto original.</p>
+    <form data-form="sla"><div class="table-scroll"><table><thead><tr><th>Prioridade</th><th>Primeira resposta (min)</th><th>Resolução (horas)</th></tr></thead><tbody>
+    ${PRIORITIES.map(p => `<tr><td>${badgePrio(p)}</td><td><input type="number" min="1" name="resp_${p}" value="${S.sla[p].resp}" required style="width:140px" ${can('configure') ? '' : 'disabled'}></td><td><input type="number" min="1" name="res_${p}" value="${S.sla[p].res}" required style="width:140px" ${can('configure') ? '' : 'disabled'}></td></tr>`).join('')}
+    </tbody></table></div>${can('configure') ? '<div class="actions" style="margin-top:12px"><button class="btn primary" type="submit">Salvar políticas</button></div>' : ''}</form></div>`;
+}
+function configView() {
+  const c = can('configure'), dis = c ? '' : 'disabled';
+  return pageHead('Configurações', 'Setores, serviços e dados fiscais do workspace.') + `
+    <div class="two">
+      <div class="card"><h2>Perfil atual</h2><p>${h(S.me.name)} · <strong>${h(ROLE_LABEL[S.me.role])}</strong></p>
+        <ul style="padding-left:18px;margin:0">${Object.keys(PERM_LABEL).map(p => `<li style="${S.me.perms.includes(p) ? '' : 'color:var(--muted);text-decoration:line-through'}">${PERM_LABEL[p]}</li>`).join('')}</ul></div>
+      <div class="card"><h2>Usuários</h2><div class="table-scroll"><table><thead><tr><th>Nome</th><th>Email</th><th>Perfil</th></tr></thead><tbody>${S.users.map(x => `<tr><td>${h(x.name)}</td><td>${h(x.email)}</td><td>${h(ROLE_LABEL[x.role])}</td></tr>`).join('')}</tbody></table></div></div>
+    </div>
+    <div class="two">
+      <div class="card"><h2>Setores</h2>
+        <div class="table-scroll"><table><thead><tr><th>Setor</th><th>Tipo</th><th>Status</th></tr></thead><tbody>${S.sectors.map(s => `<tr><td>${h(s.name)}</td><td>${h(s.type)}</td><td>${s.active ? 'Ativo' : 'Inativo'}</td></tr>`).join('')}</tbody></table></div>
+        ${c ? `<h3>Novo setor</h3><form class="grid2" data-form="sector"><label>Nome<input name="name" required minlength="2" maxlength="80"></label><label>Tipo<select name="type">${selectOpts(SECTOR_TYPES)}</select></label><button class="btn primary" type="submit">Salvar setor</button></form>` : ''}
+      </div>
+      <div class="card"><h2>Tipos de serviço (LC 116)</h2>
+        <div class="table-scroll"><table><thead><tr><th>Código</th><th>Serviço</th><th>Ativo</th></tr></thead><tbody>${S.services.map(s => `<tr><td>${h(s.code)}</td><td>${h(s.name)}</td><td><input type="checkbox" data-change="toggleService" data-id="${h(s.id)}" ${s.active ? 'checked' : ''} ${dis} aria-label="Ativar ${h(s.name)}"></td></tr>`).join('')}</tbody></table></div>
+        ${c ? `<h3>Novo serviço</h3><form class="grid2" data-form="service"><label>Nome<input name="name" required minlength="2" maxlength="120"></label><label>Código LC 116<input name="code" required placeholder="ex.: 1.07"></label><button class="btn primary" type="submit">Salvar serviço</button></form><p class="muted">Confira os códigos com a lista LC 116 do seu município.</p>` : ''}
+      </div>
+    </div>
+    <div class="card"><h2>Dados fiscais (para NF-e demonstrativa)</h2>
+      <form class="grid2" data-form="fiscal">
+        <label>CNPJ<input name="cnpj" value="${h(S.fiscal.cnpj)}" ${dis}></label>
+        <label>Razão social<input name="legalName" value="${h(S.fiscal.legalName)}" ${dis}></label>
+        <label>Endereço<input name="address" value="${h(S.fiscal.address)}" ${dis}></label>
+        <label>Cidade<input name="city" value="${h(S.fiscal.city)}" ${dis}></label>
+        <label>UF<input name="state" maxlength="2" value="${h(S.fiscal.state)}" ${dis}></label>
+        <label>CEP<input name="zip" value="${h(S.fiscal.zip)}" ${dis}></label>
+        <label>Inscrição municipal<input name="municipalRegistration" value="${h(S.fiscal.municipalRegistration)}" ${dis}></label>
+        <label>Alíquota ISS (%)<input type="number" step="0.01" min="0" max="5" name="issRate" value="${S.fiscal.issRate}" ${dis}></label>
+        ${c ? '<button class="btn primary" type="submit">Salvar dados fiscais</button>' : ''}
+      </form></div>
+    <div class="card"><h2>Campos dos relatórios</h2>
+      <p class="muted">Os campos aparecem no formulário de envio e no relatório. O campo "Valor (R$)" alimenta a NF-e demonstrativa e não pode ser removido.</p>
+      ${Object.entries(TEMPLATES).map(([tid, t]) => `<h3>${h(t.name)}</h3><div class="table-scroll"><table><tbody>${fieldRowsHtml(t.fields, 'report', tid, c)}</tbody></table></div>`).join('')}
+      ${c ? `<h3>Novo campo do relatório</h3>${fieldAdderHtml('report')}` : ''}
+    </div>
+    <div class="card"><h2>Campos do chamado</h2>
+      <p class="muted">Campos extras no formulário de abertura do chamado. Inclua ou remova conforme a operação, como no Auvo.</p>
+      <div class="table-scroll"><table><tbody>${fieldRowsHtml(S.ticketFields, 'ticket', '', c)}</tbody></table></div>
+      ${c ? `<h3>Novo campo do chamado</h3>${fieldAdderHtml('ticket')}` : ''}
+    </div>`;
+}
+
+const VIEWS = {
+  dashboard: () => dashView(), chamados: () => chamadosView(), novo: () => novoView(), agenda: () => agendaView(), kanban: () => kanbanView(),
+  relatorios: () => relatoriosView(), nfe: () => nfeView(), clientes: () => clientesView(), tarefas: () => tarefasView(),
+  sla: () => slaView(), config: () => configView()
+};
+
+function renderLogin() {
+  $('#nav').innerHTML = ''; $('#who').innerHTML = '';
+  $('#app').innerHTML = `<div class="card login"><h1>Entrar no ATENDA</h1><p class="sub">Use seu email e senha.</p>
+    <form class="stack" data-form="login">
+      <label>Email<input type="email" name="email" required autocomplete="username"></label>
+      <label>Senha<input type="password" name="password" required autocomplete="current-password"></label>
+      <p id="login-err" role="alert" style="color:var(--danger);margin:0;min-height:1em"></p>
+      <button class="btn primary" type="submit">Entrar</button>
+    </form></div>`;
+  document.title = 'ATENDA — Entrar';
+}
+function renderNav() {
+  $('#nav').innerHTML = Object.entries(ROUTES).map(([k, l]) => `<a href="#/${k}" data-r="${k}">${l}</a>`).join('');
+  $('#who').innerHTML = `<span>${h(S.me.name)} · ${h(ROLE_LABEL[S.me.role])}</span><button class="btn sm" data-act="logout">Sair</button>`;
+}
+function render() {
+  if (!S) return renderLogin();
+  renderNav();
+  const [name, id] = location.hash.replace(/^#\/?/, '').split('/');
+  const key = name === 'chamados' && id ? 'chamados' : (name === 'novo' ? 'novo' : (VIEWS[name] ? name : 'dashboard'));
+  const active = key === 'novo' ? 'chamados' : key;
+  document.querySelectorAll('#nav a').forEach(a => a.classList.toggle('on', a.dataset.r === active));
+  $('#app').innerHTML = key === 'chamados' && id ? detalheView(id) : VIEWS[key]();
+  document.title = `ATENDA — ${key === 'novo' ? 'Novo chamado' : ROUTES[key]}`;
+}
+
+/* ==================== Ações ==================== */
+const FORMS = {
+  async newTicket(f) {
+    const d = Object.fromEntries(new FormData(f));
+    const payload = {title: d.title, client: d.client, category: d.category, sector: d.sector, priority: d.priority, description: d.description};
+    payload.custom = collectFields(f, S.ticketFields, 't_');
+    if (f.elements.visit.checked) payload.visit = agendaPayload(f, 'a_');
+    const r = await api('POST', '/api/tickets', payload);
+    location.hash = `#/chamados/${r.id}`;
+    return 'Chamado criado.';
+  },
+  async reply(f) {
+    const body = f.elements.body.value.trim();
+    await api('POST', `/api/tickets/${f.dataset.id}/messages`, {body, internal: f.elements.internal.checked});
+    return 'Mensagem registrada.';
+  },
+  async report(f) {
+    const tpl = f.elements.tpl.value;
+    const values = collectFields(f, TEMPLATES[tpl].fields, 'f_');
+    const extras = [...f.querySelectorAll('.extra-row')].map(row => {
+      const label = row.querySelector('input[name^="xl_"]').value.trim();
+      if (!label) throw new Error('Dê um nome para cada item extra.');
+      return {label, kind: row.dataset.kind, value: row.querySelector('[name^="xv_"]').value};
+    });
+    await api('POST', `/api/tickets/${f.dataset.id}/reports`, {template: tpl, service: f.elements.svc.value, values, extras});
+    return 'Relatório enviado para validação.';
+  },
+  async review(f, submitter) {
+    const approve = !!submitter && submitter.value === 'approve';
+    await api('POST', `/api/reports/${f.dataset.id}/review`, {approve, feedback: f.elements.feedback.value});
+    selRep = null;
+    return approve ? 'Relatório validado. NF-e demonstrativa gerada.' : 'Relatório devolvido para correção.';
+  },
+  async gen(f) {
+    G = {show: true, type: f.elements.type.value, status: f.elements.status.value, fmt: f.elements.fmt.value};
+    return '';
+  },
+  async addField(f) {
+    const body = {
+      label: f.elements.label.value, kind: f.elements.kind.value, required: f.elements.required.checked,
+      options: [...f.querySelectorAll('input[name=opt]')].map(i => i.value),
+      free: f.elements.free ? f.elements.free.checked : false
+    };
+    if (f.dataset.scope === 'report') {
+      body.template = f.elements.template.value;
+      await api('POST', '/api/report-fields', body);
+      return 'Campo adicionado ao relatório.';
+    }
+    await api('POST', '/api/ticket-fields', body);
+    return 'Campo adicionado ao chamado.';
+  },
+  async agenda(f) {
+    await api('POST', `/api/tickets/${f.dataset.id}/agenda`, agendaPayload(f, 'a_'));
+    return 'Visita agendada.';
+  },
+  async sla(f) {
+    const data = {};
+    PRIORITIES.forEach(p => { data[p] = {resp: f.elements['resp_' + p].value, res: f.elements['res_' + p].value}; });
+    await api('PUT', '/api/sla', data);
+    return 'Políticas salvas.';
+  },
+  async sector(f) {
+    await api('POST', '/api/sectors', {name: f.elements.name.value, type: f.elements.type.value});
+    return 'Setor criado.';
+  },
+  async service(f) {
+    await api('POST', '/api/services', {name: f.elements.name.value, code: f.elements.code.value});
+    return 'Serviço criado.';
+  },
+  async fiscal(f) {
+    const v = Object.fromEntries(new FormData(f));
+    await api('PUT', '/api/fiscal', {...v, issRate: Number(v.issRate)});
+    return 'Dados fiscais salvos.';
+  },
+  async client(f) {
+    await api('POST', '/api/clients', Object.fromEntries(new FormData(f)));
+    showClientForm = false;
+    return 'Cliente cadastrado.';
+  },
+  async task(f) {
+    await api('POST', '/api/tasks', Object.fromEntries(new FormData(f)));
+    return 'Tarefa criada.';
+  }
+};
+const CHANGES = {
+  filter(el) { CF[el.dataset.k] = el.value; },
+  agTec(el) { AG.tec = el.value; },
+  toggleVisit(el) { const box = $('#visit-box'); if (box) box.style.display = el.checked ? 'block' : 'none'; },
+  agendaStatus(el) { return act(() => api('PATCH', `/api/agenda/${el.dataset.id}`, {status: el.value}).then(() => 'Status do agendamento atualizado.')); },
+  filterRep(el) { RF = el.value; },
+  tplChange(el) { const box = $('#repFields'); if (box) box.innerHTML = reportFieldsHtml(el.value); },
+  maisAdd(el) {
+    const v = el.value; el.value = '';
+    if (!v) return;
+    if (v.startsWith('opt:')) {
+      const row = el.closest('form').querySelector(`[data-opt="${v.slice(4)}"]`);
+      if (row) row.style.display = 'block';
+      const opt = el.querySelector(`option[value="${v}"]`); if (opt) opt.disabled = true;
+      return;
+    }
+    const list = el.closest('[data-mais]').querySelector('[data-extras]');
+    if (list.querySelectorAll('.extra-row').length >= MAX_EXTRAS) { toast(`Limite de ${MAX_EXTRAS} itens extras por relatório.`, true); return; }
+    list.insertAdjacentHTML('beforeend', extraRowHtml(v === 'file' ? 'attachment' : 'text'));
+  },
+  upload(el) { return uploadFile(el); },
+  selectFree(el) { const box = el.parentElement.querySelector('[data-free-box]'); if (box) box.style.display = el.value === '__free__' ? 'block' : 'none'; },
+  kindChange(el) { const box = el.closest('form').querySelector('[data-opts-box]'); if (box) box.style.display = el.value === 'select' ? 'block' : 'none'; },
+  clientPick(el) { const box = $('#client-info'); if (box) box.innerHTML = clientCardHtml(S.clients.find(c => c.id === el.value)); },
+  setStatus(el) { return act(() => api('PATCH', `/api/tickets/${el.dataset.id}`, {status: el.value}).then(() => 'Status atualizado.')); },
+  moveTicket(el) { return act(() => api('PATCH', `/api/tickets/${el.dataset.id}`, {status: el.value}).then(() => 'Chamado movido.')); },
+  setAgent(el) { return act(() => api('PATCH', `/api/tickets/${el.dataset.id}`, {agent: el.value}).then(() => 'Responsável atualizado.')); },
+  toggleService(el) { return act(() => api('PATCH', `/api/services/${el.dataset.id}`, {active: el.checked}).then(() => 'Serviço atualizado.')); }
+};
+const ACTS = {
+  toggleTask(el) {
+    const t = S.tasks.find(x => x.id === el.dataset.id);
+    if (t) return act(() => api('PATCH', `/api/tasks/${t.id}`, {done: !t.done}));
+  },
+  pickReport(el) { selRep = el.dataset.id; render(); setTimeout(() => { const p = $('#review'); if (p) p.scrollIntoView({behavior: 'smooth', block: 'start'}); }, 0); },
+  closeReview() { selRep = null; render(); },
+  repTab(el) { repTab = el.dataset.v; render(); },
+  agMode(el) { AG.mode = el.dataset.v; render(); },
+  agNav(el) {
+    if (el.dataset.v === '0') { AG.ym = todayIso().slice(0, 7); render(); return; }
+    const [y, m] = AG.ym.split('-').map(Number);
+    const d = new Date(y, m - 1 + Number(el.dataset.v), 1);
+    AG.ym = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+    render();
+  },
+  genType(el) { G = {show: true, type: el.dataset.v, status: '', fmt: G.fmt}; render(); },
+  chamTab(el) { CF.arch = el.dataset.v === 'arquivados'; render(); },
+  archiveTicket(el) {
+    const arch = el.dataset.v === '1';
+    if (arch && !confirm('Arquivar este chamado? Ele sai da lista e do Kanban. O histórico e a NF-e continuam guardados.')) return;
+    return act(() => api('PATCH', `/api/tickets/${el.dataset.id}`, {archived: arch}).then(() => {
+      if (arch) { CF.arch = false; location.hash = '#/chamados'; }
+      return arch ? 'Chamado arquivado.' : 'Chamado restaurado.';
+    }));
+  },
+  toggleClient(el) {
+    const active = el.dataset.v === '1';
+    return act(() => api('PATCH', `/api/clients/${el.dataset.id}`, {active}).then(() => active ? 'Cliente reativado.' : 'Cliente arquivado.'));
+  },
+  archTask(el) {
+    const arch = el.dataset.v === '1';
+    return act(() => api('PATCH', `/api/tasks/${el.dataset.id}`, {archived: arch}).then(() => arch ? 'Tarefa arquivada.' : 'Tarefa restaurada.'));
+  },
+  delField(el) {
+    if (!confirm('Excluir este campo? Dados já salvos não são alterados.')) return;
+    const url = el.dataset.scope === 'ticket' ? `/api/ticket-fields/${el.dataset.id}` : `/api/report-fields/${el.dataset.template}/${el.dataset.id}`;
+    return act(() => api('DELETE', url, {}).then(() => 'Campo excluído.'));
+  },
+  editOpts(el) {
+    const id = el.dataset.id;
+    const field = el.dataset.scope === 'ticket' ? S.ticketFields.find(x => x.id === id) : (TEMPLATES[el.dataset.template] || {fields: []}).fields.find(x => x.id === id);
+    if (!field) return;
+    const txt = prompt('Opções da lista, separadas por ponto e vírgula (;):', field.options.list.join('; '));
+    if (txt === null) return;
+    const free = confirm('Permitir texto livre na lista (opção "Outra")? OK = sim, Cancelar = não.');
+    const options = txt.split(';').map(s => s.trim()).filter(Boolean);
+    const url = el.dataset.scope === 'ticket' ? `/api/ticket-fields/${id}` : `/api/report-fields/${el.dataset.template}/${id}`;
+    return act(() => api('PATCH', url, {options, free}).then(() => 'Opções atualizadas.'));
+  },
+  addOpt(el) { el.closest('form').querySelector('[data-opts]').insertAdjacentHTML('beforeend', optRowHtml()); },
+  rmOpt(el) { el.parentElement.remove(); },
+  rmExtra(el) { el.closest('.extra-row').remove(); },
+  copyLink(el) {
+    if (!el.dataset.token) { toast('Link ainda não gerado. Atualize a página.', true); return; }
+    const url = `${location.origin}/abrir?t=${el.dataset.token}`;
+    if (navigator.clipboard && window.isSecureContext) {
+      return navigator.clipboard.writeText(url).then(() => toast('Link copiado.'), () => prompt('Copie o link:', url));
+    }
+    prompt('Copie o link:', url);
+  },
+  newLink(el) {
+    if (!confirm('Gerar um novo link para este cliente? O link antigo deixa de funcionar.')) return;
+    return act(() => api('POST', `/api/clients/${el.dataset.id}/link`, {}).then(() => 'Novo link gerado. Use “Copiar link”.'));
+  },
+  toggleClientForm() { showClientForm = !showClientForm; render(); },
+  logout() { return api('POST', '/api/logout', {}).then(() => { S = null; renderLogin(); }); },
+  csvTickets() {
+    const cols = ['Número','Assunto','Cliente','Tipo de chamado','Prioridade','Status','Responsável','Equipe','SLA','Prazo'];
+    const rows = filteredTickets().map(t => [t.id, t.title, t.client, t.category, t.priority, t.status, t.agent, t.team, SLA_LABEL[t.sla], t.due]);
+    download('chamados.csv', '﻿' + [cols.map(csvEsc).join(';'), ...rows.map(r => r.map(csvEsc).join(';'))].join('\r\n'), 'text/csv;charset=utf-8;');
+  },
+  csvReport() {
+    const list = S.tickets.filter(t => (!G.type || t.category === G.type) && (!G.status || t.status === G.status)).sort((a, b) => a.id - b.id);
+    const cols = ['Número','Assunto','Cliente','Tipo de chamado','Prioridade','Status','Responsável','Equipe','SLA','Prazo'];
+    const rows = list.map(t => [t.id, t.title, t.client, t.category, t.priority, t.status, t.agent, t.team, SLA_LABEL[t.sla], t.due]);
+    download(`relatorio-${slug(G.type || 'todos-os-tipos')}.csv`, '﻿' + [cols.map(csvEsc).join(';'), ...rows.map(r => r.map(csvEsc).join(';'))].join('\r\n'), 'text/csv;charset=utf-8;');
+  },
+  printReport() { window.print(); }
+};
+
+document.addEventListener('submit', e => {
+  const f = e.target; const k = f.dataset && f.dataset.form; if (!k) return;
+  e.preventDefault();
+  if (k === 'login') {
+    api('POST', '/api/login', {email: f.elements.email.value, password: f.elements.password.value})
+      .then(() => refresh()).then(() => { location.hash = '#/dashboard'; render(); })
+      .catch(err => { const el = $('#login-err'); if (el) el.textContent = err.message; });
+    return;
+  }
+  if (k === 'gen' || k === 'filter') { FORMS.gen(f); render(); return; }
+  act(() => FORMS[k](f, e.submitter));
+});
+document.addEventListener('change', e => {
+  const el = e.target; const k = el.dataset && el.dataset.change; if (!k) return;
+  if (k === 'tplChange' || k === 'toggleVisit') { CHANGES[k](el); return; }
+  if (k === 'filter' || k === 'filterRep' || k === 'agTec') { CHANGES[k](el); render(); return; }
+  CHANGES[k](el);
+});
+document.addEventListener('click', e => {
+  const go = e.target.closest('[data-go]');
+  if (go) { location.hash = go.dataset.go; return; }
+  const el = e.target.closest('[data-act]'); if (!el) return;
+  const fn = ACTS[el.dataset.act]; if (!fn) return;
+  if (el.dataset.act === 'csvTickets' || el.dataset.act === 'csvReport' || el.dataset.act === 'printReport') { fn(el); return; }
+  const r = fn(el);
+  if (r && typeof r.then === 'function') r.catch(err => toast(err.message, true));
+});
+document.addEventListener('input', e => {
+  if (e.target.dataset && e.target.dataset.input === 'search') {
+    CF.q = e.target.value;
+    const box = $('#ticket-rows'); if (box) box.innerHTML = ticketTable(filteredTickets());
+  }
+});
+window.addEventListener('hashchange', () => { if (S) render(); });
+
+(async function boot() {
+  try { await refresh(); if (!location.hash) location.hash = '#/dashboard'; render(); }
+  catch (e) { renderLogin(); }
+})();
+</script>
+</body>
+</html>
