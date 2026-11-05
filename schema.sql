@@ -1,0 +1,197 @@
+-- ATENDA — esquema para Cloudflare D1 (SQLite)
+
+CREATE TABLE IF NOT EXISTS users (
+  id TEXT PRIMARY KEY,
+  name TEXT NOT NULL,
+  email TEXT NOT NULL UNIQUE COLLATE NOCASE,
+  role TEXT NOT NULL CHECK (role IN ('gestor','atendente','revisor')),
+  active INTEGER NOT NULL DEFAULT 1,
+  password_hash TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS sessions (
+  token_hash TEXT PRIMARY KEY,
+  user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  expires_at INTEGER NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS clients (
+  id TEXT PRIMARY KEY,
+  name TEXT NOT NULL,
+  company TEXT NOT NULL,
+  email TEXT NOT NULL DEFAULT '',
+  phone TEXT NOT NULL DEFAULT '',
+  doc TEXT NOT NULL DEFAULT '',
+  address TEXT NOT NULL DEFAULT '',
+  initials TEXT NOT NULL DEFAULT '',
+  active INTEGER NOT NULL DEFAULT 1
+);
+
+CREATE TABLE IF NOT EXISTS sectors (
+  id TEXT PRIMARY KEY,
+  name TEXT NOT NULL UNIQUE,
+  type TEXT NOT NULL CHECK (type IN ('Loja','Interno','Externo')),
+  active INTEGER NOT NULL DEFAULT 1
+);
+
+CREATE TABLE IF NOT EXISTS services (
+  id TEXT PRIMARY KEY,
+  name TEXT NOT NULL,
+  code TEXT NOT NULL,
+  active INTEGER NOT NULL DEFAULT 1
+);
+
+CREATE TABLE IF NOT EXISTS sla_policies (
+  priority TEXT PRIMARY KEY CHECK (priority IN ('Urgente','Alta','Normal','Baixa')),
+  resp_min INTEGER NOT NULL CHECK (resp_min > 0),
+  res_hours INTEGER NOT NULL CHECK (res_hours > 0)
+);
+
+CREATE TABLE IF NOT EXISTS fiscal_config (
+  id INTEGER PRIMARY KEY CHECK (id = 1),
+  cnpj TEXT NOT NULL DEFAULT '',
+  legal_name TEXT NOT NULL DEFAULT '',
+  address TEXT NOT NULL DEFAULT '',
+  city TEXT NOT NULL DEFAULT '',
+  state TEXT NOT NULL DEFAULT '',
+  zip TEXT NOT NULL DEFAULT '',
+  municipal_registration TEXT NOT NULL DEFAULT '',
+  iss_rate REAL NOT NULL DEFAULT 0 CHECK (iss_rate >= 0 AND iss_rate <= 5)
+);
+
+CREATE TABLE IF NOT EXISTS tickets (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  title TEXT NOT NULL,
+  client_company TEXT NOT NULL,
+  category TEXT NOT NULL,
+  priority TEXT NOT NULL CHECK (priority IN ('Urgente','Alta','Normal','Baixa')),
+  status TEXT NOT NULL CHECK (status IN ('Novo','Em triagem','Em atendimento','Aguardando cliente','Resolvido')),
+  agent TEXT NOT NULL DEFAULT 'Não atribuído',
+  team TEXT NOT NULL DEFAULT '',
+  sector_id TEXT,
+  sla TEXT NOT NULL DEFAULT 'ok' CHECK (sla IN ('ok','warning','late')),
+  due_text TEXT NOT NULL DEFAULT '',
+  created_text TEXT NOT NULL DEFAULT '',
+  updated_text TEXT NOT NULL DEFAULT '',
+  custom_json TEXT NOT NULL DEFAULT '{}',
+  archived INTEGER NOT NULL DEFAULT 0
+);
+
+CREATE TABLE IF NOT EXISTS ticket_messages (
+  id TEXT PRIMARY KEY,
+  ticket_id INTEGER NOT NULL REFERENCES tickets(id) ON DELETE CASCADE,
+  author TEXT NOT NULL,
+  body TEXT NOT NULL,
+  time_text TEXT NOT NULL,
+  internal INTEGER NOT NULL DEFAULT 0,
+  system INTEGER NOT NULL DEFAULT 0,
+  seq INTEGER NOT NULL
+);
+
+-- Relatórios de encerramento. ticket_category é um snapshot da categoria no envio.
+CREATE TABLE IF NOT EXISTS closing_reports (
+  id TEXT PRIMARY KEY,
+  ticket_id INTEGER NOT NULL REFERENCES tickets(id) ON DELETE CASCADE,
+  ticket_category TEXT NOT NULL,
+  author_id TEXT NOT NULL REFERENCES users(id),
+  author_name TEXT NOT NULL,
+  template_id TEXT NOT NULL,
+  template_name TEXT NOT NULL,
+  service_id TEXT NOT NULL,
+  service_name TEXT NOT NULL,
+  service_code TEXT NOT NULL,
+  fields_json TEXT NOT NULL,
+  values_json TEXT NOT NULL,
+  status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending','approved','returned')),
+  reviewer_id TEXT REFERENCES users(id),
+  reviewer_name TEXT,
+  reviewed_at TEXT,
+  feedback TEXT NOT NULL DEFAULT '',
+  submitted_at TEXT NOT NULL
+);
+-- No máximo um relatório ativo (pendente ou aprovado) por chamado.
+CREATE UNIQUE INDEX IF NOT EXISTS one_active_report_per_ticket
+  ON closing_reports(ticket_id) WHERE status <> 'returned';
+
+CREATE TABLE IF NOT EXISTS invoices (
+  id TEXT PRIMARY KEY,
+  number INTEGER NOT NULL UNIQUE,
+  report_id TEXT NOT NULL UNIQUE REFERENCES closing_reports(id) ON DELETE CASCADE,
+  ticket_id INTEGER NOT NULL,
+  client TEXT NOT NULL,
+  status TEXT NOT NULL,
+  template_name TEXT NOT NULL,
+  service_name TEXT NOT NULL,
+  service_code TEXT NOT NULL,
+  iss_rate REAL NOT NULL,
+  base REAL NOT NULL,
+  iss REAL NOT NULL,
+  net REAL NOT NULL,
+  items_json TEXT NOT NULL,
+  created_at TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS tasks (
+  id TEXT PRIMARY KEY,
+  title TEXT NOT NULL,
+  agent TEXT NOT NULL,
+  due TEXT NOT NULL,
+  priority TEXT NOT NULL,
+  done INTEGER NOT NULL DEFAULT 0,
+  ticket_id INTEGER NOT NULL,
+  archived INTEGER NOT NULL DEFAULT 0
+);
+
+-- Campos dos relatórios, editáveis pelo gestor. id é único dentro do tipo de relatório.
+CREATE TABLE IF NOT EXISTS report_fields (
+  template_id TEXT NOT NULL CHECK (template_id IN ('service','attendance','external','internal')),
+  id TEXT NOT NULL,
+  label TEXT NOT NULL,
+  kind TEXT NOT NULL CHECK (kind IN ('text','textarea','date','number','select','attachment')),
+  required INTEGER NOT NULL DEFAULT 0,
+  position INTEGER NOT NULL,
+  options_json TEXT NOT NULL DEFAULT '{}',
+  PRIMARY KEY (template_id, id)
+);
+CREATE INDEX IF NOT EXISTS report_fields_by_template ON report_fields (template_id, position);
+
+-- Campos personalizados do chamado (configurados pelo gestor, como no Auvo).
+CREATE TABLE IF NOT EXISTS ticket_fields (
+  id TEXT PRIMARY KEY,
+  label TEXT NOT NULL,
+  kind TEXT NOT NULL CHECK (kind IN ('text','textarea','date','number','select','attachment')),
+  required INTEGER NOT NULL DEFAULT 0,
+  position INTEGER NOT NULL,
+  options_json TEXT NOT NULL DEFAULT '{}'
+);
+
+-- Anexos (imagem ou PDF, até 5 MB), guardados em blocos base64 na tabela attachment_chunks.
+CREATE TABLE IF NOT EXISTS attachments (
+  id TEXT PRIMARY KEY,
+  filename TEXT NOT NULL,
+  mime TEXT NOT NULL,
+  size INTEGER NOT NULL,
+  uploaded_by TEXT NOT NULL,
+  created_at TEXT NOT NULL
+);
+CREATE TABLE IF NOT EXISTS attachment_chunks (
+  attachment_id TEXT NOT NULL REFERENCES attachments(id) ON DELETE CASCADE,
+  seq INTEGER NOT NULL,
+  data TEXT NOT NULL,
+  PRIMARY KEY (attachment_id, seq)
+);
+
+-- Agenda: visitas e tarefas de campo geradas a partir de chamados.
+CREATE TABLE IF NOT EXISTS agenda_items (
+  id TEXT PRIMARY KEY,
+  ticket_id INTEGER NOT NULL REFERENCES tickets(id) ON DELETE CASCADE,
+  task_type TEXT NOT NULL CHECK (task_type IN ('Manutenção Preventiva','Manutenção Corretiva','Instalação','Visita técnica')),
+  scheduled_date TEXT NOT NULL,
+  scheduled_time TEXT NOT NULL,
+  technician TEXT NOT NULL,
+  address TEXT NOT NULL DEFAULT '',
+  status TEXT NOT NULL DEFAULT 'Aberta' CHECK (status IN ('Aberta','Em andamento','Concluída','Cancelada')),
+  created_by TEXT NOT NULL,
+  created_at TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS agenda_by_date ON agenda_items (scheduled_date, scheduled_time);

@@ -1,0 +1,16 @@
+name = "atenda"
+main = "src/worker.js"
+compatibility_date = "2025-09-01"
+
+# Páginas estáticas (public/) servidas pelo Worker. Só /api/* passa pelo código do servidor.
+[assets]
+directory = "./public"
+binding = "ASSETS"
+run_worker_first = ["/api/*"]
+
+# Banco D1 (SQLite). Crie com: npx wrangler d1 create atenda
+# e cole o database_id que ele mostrar aqui.
+[[d1_databases]]
+binding = "DB"
+database_name = "atenda"
+database_id = "COLE_O_ID_DO_D1_AQUI"
