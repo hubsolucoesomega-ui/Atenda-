@@ -389,7 +389,9 @@ function whatsappHtml(t) {
   const digits = String(c.phone || '').replace(/\D/g, '');
   if (!digits) return '<p class="muted" style="margin-top:12px">Cadastre o telefone do cliente para enviar aviso pelo WhatsApp.</p>';
   const num = digits.length === 10 || digits.length === 11 ? '55' + digits : digits;
-  const msg = `Olá, ${c.name || ''}! Seu chamado #${t.id} (“${t.title}”) foi aberto com sucesso. Em breve nossa equipe dará continuidade. ATENDA`;
+  const visita = S.agenda.find(a => a.ticketId === t.id);
+  const extra = visita ? ` Visita agendada para ${fmtDate(visita.date)} às ${visita.time}. Adicione ao seu calendário: ${googleAgendaUrl(visita, t)}` : '';
+  const msg = `Olá, ${c.name || ''}! Seu chamado #${t.id} (“${t.title}”) foi aberto com sucesso. Em breve nossa equipe dará continuidade.${extra} ATENDA`;
   return `<div class="actions" style="margin-top:12px"><a class="btn" target="_blank" rel="noopener" href="${h(`https://wa.me/${num}?text=${encodeURIComponent(msg)}`)}">Enviar aviso pelo WhatsApp</a></div>`;
 }
 /* Contexto completo para validar o relatório: chamado, agenda e últimas mensagens. */
@@ -494,11 +496,27 @@ function agendaPayload(f, p) {
   return {taskType: f.elements[p + 'type'].value, date: f.elements[p + 'date'].value, time: f.elements[p + 'time'].value,
     technician: f.elements[p + 'technician'].value, address: f.elements[p + 'address'].value};
 }
+/* Link que abre o Google Agenda já preenchido com a visita (duração de 1 hora, horário de São Paulo). */
+function googleAgendaUrl(a, t) {
+  const [y, mo, d] = a.date.split('-').map(Number);
+  const [hh, mi] = a.time.split(':').map(Number);
+  const fmt = dt => dt.toISOString().slice(0, 16).replace(/[-:]/g, '') + '00';
+  const params = new URLSearchParams({
+    action: 'TEMPLATE',
+    text: `${a.taskType} · Chamado #${t.id}`,
+    dates: `${fmt(new Date(Date.UTC(y, mo - 1, d, hh, mi)))}/${fmt(new Date(Date.UTC(y, mo - 1, d, hh + 1, mi)))}`,
+    details: `${t.title} — ${t.client}`,
+    location: a.address || '',
+    ctz: 'America/Sao_Paulo'
+  });
+  return 'https://calendar.google.com/calendar/render?' + params.toString();
+}
 function agendaTicketHtml(t) {
   const items = S.agenda.filter(a => a.ticketId === t.id);
   return `<div class="card"><h2>Agenda deste chamado</h2>
     ${items.length ? items.map(a => `<div class="cardk" style="display:flex;gap:10px;justify-content:space-between;flex-wrap:wrap;align-items:center">
-      <div><strong>${fmtDate(a.date)} · ${h(a.time)}</strong> · ${h(a.taskType)}<div class="muted">${h(a.technician)} · ${h(a.address || 'Sem endereço')}</div></div>
+      <div><strong>${fmtDate(a.date)} · ${h(a.time)}</strong> · ${h(a.taskType)}<div class="muted">${h(a.technician)} · ${h(a.address || 'Sem endereço')}</div>
+        <a class="btn sm" style="margin-top:6px" target="_blank" rel="noopener" href="${h(googleAgendaUrl(a, t))}">Adicionar ao Google Agenda</a></div>
       <select data-change="agendaStatus" data-id="${h(a.id)}" aria-label="Status do agendamento" ${can('receive') ? '' : 'disabled'}>${selectOpts(AGENDA_STATUS, a.status)}</select></div>`).join('') : '<div class="muted">Nenhuma visita agendada.</div>'}
     ${can('receive') && !t.archived && t.status !== 'Resolvido' ? `<h3>Agendar visita</h3><form class="stack" data-form="agenda" data-id="${t.id}">${agendaFieldsHtml('a_')}<div class="actions"><button class="btn primary" type="submit">Agendar</button></div></form>` : ''}
   </div>`;
