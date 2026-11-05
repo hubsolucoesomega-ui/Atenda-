@@ -122,6 +122,7 @@ const PRIO_CLASS = {Urgente:'b-urg', Alta:'b-alta', Normal:'', Baixa:''};
 let CF = {q:'', status:'', cat:'', arch: false};
 let RF = '';
 let repTab = 'validacao';
+let cfgTab = 'geral';
 let selRep = null;
 let showClientForm = false;
 let AG = {ym: null, mode: 'mes', tec: ''};
@@ -552,8 +553,13 @@ function clientIssues(r) {
 }
 function canReview(r) { return r.status === 'pending' && r.authorId !== S.me.id && can('review'); }
 function relatoriosView() {
-  const tabs = `<div class="tabs no-print">${[['validacao', 'Validação'], ['tipo', 'Por tipo de chamado']].map(([k, l]) => `<button class="tab ${repTab === k ? 'on' : ''}" data-act="repTab" data-v="${k}">${l}</button>`).join('')}</div>`;
-  return pageHead('Relatórios', repTab === 'validacao' ? 'Revise os encerramentos antes de concluir o atendimento.' : 'Relatórios e indicadores agrupados pelo tipo de chamado.') + tabs + (repTab === 'validacao' ? validacaoView() : tipoView());
+  const abas = [['validacao', 'Validação'], ['tipo', 'Por tipo de chamado']];
+  if (can('configure')) abas.push(['customizar', 'Customizar relatórios']);
+  const atual = abas.some(([k]) => k === repTab) ? repTab : 'validacao';
+  const tabs = `<div class="tabs no-print">${abas.map(([k, l]) => `<button class="tab ${atual === k ? 'on' : ''}" data-act="repTab" data-v="${k}">${l}</button>`).join('')}</div>`;
+  const desc = {validacao: 'Revise os encerramentos antes de concluir o atendimento.', tipo: 'Relatórios e indicadores agrupados pelo tipo de chamado.', customizar: 'Campos e itens de cada tipo de relatório, como no Auvo.'};
+  const corpo = atual === 'customizar' ? customizarRelatoriosHtml() : (atual === 'validacao' ? validacaoView() : tipoView());
+  return pageHead('Relatórios', desc[atual]) + tabs + corpo;
 }
 function validacaoView() {
   const rows = S.reports.filter(r => !RF || r.status === RF);
@@ -647,7 +653,7 @@ function clientesView() {
       <label>Endereço<input name="address" maxlength="255" placeholder="Rua, número, bairro, cidade"></label>
       <button class="btn primary" type="submit">Salvar cliente</button></form></div>` : '') +
     `<div class="card"><p class="muted" style="margin-top:0">Cada cliente tem um link próprio para abrir chamados. “Novo link” invalida o anterior.</p><div class="table-scroll"><table><thead><tr><th>Cliente</th><th>Empresa</th><th>Email</th><th>Telefone</th><th>Documento</th><th>Chamados</th><th>Status</th><th></th></tr></thead><tbody>
-    ${S.clients.map(c => `<tr><td>${h(c.name)}</td><td>${h(c.company)}</td><td>${h(c.email)}</td><td>${h(c.phone)}</td><td>${h(c.doc)}</td><td>${S.tickets.filter(t => t.client === c.company).length}</td><td><span class="badge ${c.active ? 'b-ok' : ''}">${c.active ? 'Ativo' : 'Arquivado'}</span></td><td style="white-space:nowrap">${can('receive') && c.active ? `<button class="btn sm" data-act="copyLink" data-token="${h(c.linkToken)}">Copiar link</button> <button class="btn sm" data-act="newLink" data-id="${h(c.id)}">Novo link</button> ` : ''}${can('configure') ? `<button class="btn sm" data-act="toggleClient" data-id="${h(c.id)}" data-v="${c.active ? '0' : '1'}">${c.active ? 'Arquivar' : 'Reativar'}</button>` : ''}</td></tr>`).join('')}
+    ${S.clients.map(c => `<tr><td>${h(c.name)}</td><td>${h(c.company)}</td><td>${h(c.email)}</td><td>${h(c.phone)}</td><td>${h(c.doc)}</td><td>${S.tickets.filter(t => t.client === c.company).length}</td><td><span class="badge ${c.active ? 'b-ok' : ''}">${c.active ? 'Ativo' : 'Arquivado'}</span></td><td style="white-space:nowrap">${can('receive') && c.active ? `<button class="btn sm" data-act="copyLink" data-token="${h(c.linkToken)}" data-company="${h(c.company)}">Copiar link</button> <button class="btn sm" data-act="newLink" data-id="${h(c.id)}">Novo link</button> ` : ''}${can('configure') ? `<button class="btn sm" data-act="toggleClient" data-id="${h(c.id)}" data-v="${c.active ? '0' : '1'}">${c.active ? 'Arquivar' : 'Reativar'}</button>` : ''}</td></tr>`).join('')}
     </tbody></table></div></div>`;
 }
 function tarefasView() {
@@ -682,11 +688,12 @@ function slaView() {
 }
 function configView() {
   const c = can('configure'), dis = c ? '' : 'disabled';
-  return pageHead('Configurações', 'Setores, serviços e dados fiscais do workspace.') + `
+  const tabs = `<div class="tabs no-print">${[['geral', 'Geral'], ['usuarios', 'Usuários']].map(([k, l]) => `<button class="tab ${cfgTab === k ? 'on' : ''}" data-act="cfgTab" data-v="${k}">${l}</button>`).join('')}</div>`;
+  if (cfgTab === 'usuarios') return pageHead('Configurações', 'Perfis de acesso de quem usa o ATENDA.') + tabs + usuariosTabHtml(c);
+  return pageHead('Configurações', 'Setores, serviços e dados fiscais do workspace.') + tabs + `
     <div class="two">
       <div class="card"><h2>Perfil atual</h2><p>${h(S.me.name)} · <strong>${h(ROLE_LABEL[S.me.role])}</strong></p>
         <ul style="padding-left:18px;margin:0">${Object.keys(PERM_LABEL).map(p => `<li style="${S.me.perms.includes(p) ? '' : 'color:var(--muted);text-decoration:line-through'}">${PERM_LABEL[p]}</li>`).join('')}</ul></div>
-      <div class="card"><h2>Usuários</h2><div class="table-scroll"><table><thead><tr><th>Nome</th><th>Email</th><th>Perfil</th></tr></thead><tbody>${S.users.map(x => `<tr><td>${h(x.name)}</td><td>${h(x.email)}</td><td>${h(ROLE_LABEL[x.role])}</td></tr>`).join('')}</tbody></table></div></div>
     </div>
     <div class="two">
       <div class="card"><h2>Setores</h2>
@@ -710,11 +717,6 @@ function configView() {
         <label>Alíquota ISS (%)<input type="number" step="0.01" min="0" max="5" name="issRate" value="${S.fiscal.issRate}" ${dis}></label>
         ${c ? '<button class="btn primary" type="submit">Salvar dados fiscais</button>' : ''}
       </form></div>
-    <div class="card"><h2>Campos dos relatórios</h2>
-      <p class="muted">Os campos aparecem no formulário de envio e no relatório. O campo "Valor (R$)" alimenta a NF-e demonstrativa e não pode ser removido.</p>
-      ${Object.entries(TEMPLATES).map(([tid, t]) => `<h3>${h(t.name)}</h3><div class="table-scroll"><table><tbody>${fieldRowsHtml(t.fields, 'report', tid, c)}</tbody></table></div>`).join('')}
-      ${c ? `<h3>Novo campo do relatório</h3>${fieldAdderHtml('report')}` : ''}
-    </div>
     <div class="card"><h2>Campos do chamado</h2>
       <p class="muted">Campos extras no formulário de abertura do chamado. Inclua ou remova conforme a operação, como no Auvo.</p>
       <div class="table-scroll"><table><tbody>${fieldRowsHtml(S.ticketFields, 'ticket', '', c)}</tbody></table></div>
@@ -722,6 +724,29 @@ function configView() {
     </div>`;
 }
 
+function usuariosTabHtml(c) {
+  return `<div class="card"><h2>Usuários</h2><div class="table-scroll"><table><thead><tr><th>Nome</th><th>Email</th><th>Perfil</th><th>Status</th><th></th></tr></thead><tbody>
+    ${S.users.map(x => `<tr><td>${h(x.name)}</td><td>${h(x.email)}</td><td>${h(ROLE_LABEL[x.role])}</td><td><span class="badge ${x.active ? 'b-ok' : ''}">${x.active ? 'Ativo' : 'Inativo'}</span></td><td>${c && x.id !== S.me.id ? `<button class="btn sm" data-act="toggleUser" data-id="${h(x.id)}" data-v="${x.active ? '0' : '1'}">${x.active ? 'Desativar' : 'Reativar'}</button>` : ''}</td></tr>`).join('')}
+    </tbody></table></div></div>
+    ${c ? `<div class="card"><h2>Novo perfil de usuário</h2>
+      <form class="grid2" data-form="user">
+        <label>Nome<input name="name" required minlength="2" maxlength="100"></label>
+        <label>Email<input type="email" name="email" required maxlength="255"></label>
+        <label>Perfil<select name="role">${Object.entries(ROLE_LABEL).map(([k, l]) => `<option value="${k}">${h(l)}</option>`).join('')}</select></label>
+        <label>Senha inicial<input type="password" name="password" required minlength="8" maxlength="100" autocomplete="new-password"></label>
+        <p class="muted" style="grid-column:1/-1;margin:0">Entregue a senha inicial pessoalmente ou por canal seguro. A pessoa entra com o email e essa senha.</p>
+        <button class="btn primary" type="submit">Criar usuário</button>
+      </form></div>` : '<div class="card muted">Só o gestor cria ou desativa usuários.</div>'}`;
+}
+function customizarRelatoriosHtml() {
+  const c = can('configure');
+  return `<div class="card"><h2>Campos dos relatórios</h2>
+      <p class="muted">Os campos aparecem no formulário de envio e no relatório. O campo "Valor (R$)" alimenta a NF-e demonstrativa e não pode ser removido.</p>
+      ${Object.entries(TEMPLATES).map(([tid, t]) => `<h3>${h(t.name)}</h3><div class="table-scroll"><table><tbody>${fieldRowsHtml(t.fields, 'report', tid, c)}</tbody></table></div>`).join('')}
+      ${c ? `<h3>Novo campo do relatório</h3>${fieldAdderHtml('report')}` : ''}
+    </div>`;
+}
+const slugify = s => String(s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 const VIEWS = {
   dashboard: () => dashView(), chamados: () => chamadosView(), novo: () => novoView(), agenda: () => agendaView(), kanban: () => kanbanView(),
   relatorios: () => relatoriosView(), nfe: () => nfeView(), clientes: () => clientesView(), tarefas: () => tarefasView(),
@@ -833,6 +858,10 @@ const FORMS = {
     showClientForm = false;
     return 'Cliente cadastrado.';
   },
+  async user(f) {
+    await api('POST', '/api/users', Object.fromEntries(new FormData(f)));
+    return 'Usuário criado. Entregue a senha inicial com segurança.';
+  },
   async task(f) {
     await api('POST', '/api/tasks', Object.fromEntries(new FormData(f)));
     return 'Tarefa criada.';
@@ -919,10 +948,15 @@ const ACTS = {
   },
   addOpt(el) { el.closest('form').querySelector('[data-opts]').insertAdjacentHTML('beforeend', optRowHtml()); },
   rmOpt(el) { el.parentElement.remove(); },
+  cfgTab(el) { cfgTab = el.dataset.v; render(); },
+  toggleUser(el) {
+    const active = el.dataset.v === '1';
+    return act(() => api('PATCH', `/api/users/${el.dataset.id}`, {active}).then(() => active ? 'Usuário reativado.' : 'Usuário desativado.'));
+  },
   rmExtra(el) { el.closest('.extra-row').remove(); },
   copyLink(el) {
     if (!el.dataset.token) { toast('Link ainda não gerado. Atualize a página.', true); return; }
-    const url = `${location.origin}/abrir?t=${el.dataset.token}`;
+    const url = `${location.origin}/abrir?e=${slugify(el.dataset.company)}&t=${el.dataset.token}`;
     if (navigator.clipboard && window.isSecureContext) {
       return navigator.clipboard.writeText(url).then(() => toast('Link copiado.'), () => prompt('Copie o link:', url));
     }
