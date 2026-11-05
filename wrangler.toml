@@ -13,4 +13,4 @@ run_worker_first = ["/api/*"]
 [[d1_databases]]
 binding = "DB"
 database_name = "atenda"
-database_id = "COLE_O_ID_DO_D1_AQUI"
+database_id = "1710e97c-8812-48d0-b22b-6ffca76156ab"
