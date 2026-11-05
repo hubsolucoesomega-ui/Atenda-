@@ -89,6 +89,11 @@ textarea{min-height:80px;resize:vertical}
 #toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%) translateY(120px);background:var(--text);color:var(--surface);padding:10px 16px;border-radius:8px;transition:transform .25s;z-index:50;max-width:92vw;font-size:14px}
 #toast.show{transform:translateX(-50%) translateY(0)}
 #toast.err{background:var(--danger);color:#fff}
+.upload{display:flex;flex-direction:column;gap:6px}
+.upload input[type=file]{padding:6px}
+.opt-row{display:flex;gap:8px;align-items:center}
+.opt-row input{flex:1}
+.thumb{display:block;max-width:100%;max-height:200px;border-radius:8px;margin:4px 0}
 @media print{header.top,.no-print,#toast{display:none!important}body{background:#fff;color:#000}.card{box-shadow:none;border-color:#bbb}}
 </style>
 </head>
@@ -114,7 +119,7 @@ const SLA_CLASS = {ok:'b-ok', warning:'b-warn', late:'b-late'};
 const PRIO_CLASS = {Urgente:'b-urg', Alta:'b-alta', Normal:'', Baixa:''};
 
 /* UI local (não persistido) */
-let CF = {q:'', status:'', cat:''};
+let CF = {q:'', status:'', cat:'', arch: false};
 let RF = '';
 let repTab = 'validacao';
 let selRep = null;
@@ -207,7 +212,7 @@ function ticketTable(list) {
 }
 function filteredTickets() {
   const q = CF.q.toLowerCase();
-  return S.tickets.filter(t => (!q || `${t.id} ${t.title} ${t.client}`.toLowerCase().includes(q)) && (!CF.status || t.status === CF.status) && (!CF.cat || t.category === CF.cat));
+  return (CF.arch ? S.archivedTickets : S.tickets).filter(t => (!q || `${t.id} ${t.title} ${t.client}`.toLowerCase().includes(q)) && (!CF.status || t.status === CF.status) && (!CF.cat || t.category === CF.cat));
 }
 
 function dashView() {
@@ -230,6 +235,7 @@ function dashView() {
 function chamadosView() {
   return pageHead('Chamados', 'Receba solicitações, acompanhe conversas e conclua atendimentos.',
     `<div class="actions"><button class="btn" data-act="csvTickets">Exportar CSV</button>${can('receive') ? '<a class="btn primary" href="#/novo">Novo chamado</a>' : ''}</div>`) + `
+    <div class="tabs no-print">${[['ativos', 'Ativos'], ['arquivados', 'Arquivados']].map(([k, l]) => `<button class="tab ${(CF.arch ? 'arquivados' : 'ativos') === k ? 'on' : ''}" data-act="chamTab" data-v="${k}">${l}</button>`).join('')}</div>
     <div class="card">
       <form class="grid2 no-print" style="margin-bottom:12px" onsubmit="return false">
         <label>Buscar<input type="search" data-input="search" placeholder="Número, assunto ou cliente" value="${h(CF.q)}"></label>
@@ -245,12 +251,17 @@ function novoView() {
     <div class="card"><form class="stack" data-form="newTicket">
       <label>Assunto<input name="title" required minlength="5" maxlength="160" placeholder="Qual é a solicitação?"></label>
       <div class="grid2">
-        <label>Cliente<select name="client" required><option value="">Selecione</option>${S.clients.filter(c => c.active).map(c => `<option value="${h(c.id)}">${h(c.company)}</option>`).join('')}</select></label>
+        <label>Cliente<select name="client" required data-change="clientPick"><option value="">Selecione</option>${S.clients.filter(c => c.active).map(c => `<option value="${h(c.id)}">${h(c.company)}</option>`).join('')}</select></label>
         <label>Tipo de chamado<select name="category" required><option value="">Selecione</option>${selectOpts(CATEGORIES)}</select></label>
         <label>Setor<select name="sector" required><option value="">Selecione</option>${S.sectors.filter(s => s.active).map(s => `<option value="${h(s.id)}">${h(s.name)}</option>`).join('')}</select></label>
         <label>Prioridade<select name="priority" required>${selectOpts(PRIORITIES, 'Normal')}</select></label>
       </div>
+      <div id="client-info"></div>
       <label>Descrição<textarea name="description" required maxlength="4000"></textarea></label>
+      ${S.ticketFields.length ? `<fieldset style="border:1px solid var(--border);border-radius:10px;padding:12px">
+        <legend class="muted">Informações adicionais</legend>
+        <div class="grid2">${fieldsHtml(S.ticketFields, 't_')}</div>
+      </fieldset>` : ''}
       <fieldset style="border:1px solid var(--border);border-radius:10px;padding:12px">
         <legend class="muted">Visita técnica</legend>
         <label class="inline"><input type="checkbox" name="visit" data-change="toggleVisit"> Gerar agendamento na agenda ao abrir o chamado</label>
@@ -259,25 +270,142 @@ function novoView() {
       <div class="actions"><button class="btn primary" type="submit">Abrir chamado</button><a class="btn" href="#/chamados">Cancelar</a></div>
     </form></div>`;
 }
-function fieldsHtml(tplId) {
-  return TEMPLATES[tplId].fields.map(f => {
+/* Campos dinâmicos (relatórios e chamado). prefix: 'f_' nos relatórios, 't_' no chamado. */
+function fieldsHtml(fields, prefix = 'f_') {
+  return fields.map(f => {
+    const name = prefix + f.id;
     const req = f.required ? 'required' : '';
     const label = `${h(f.label)}${f.required ? ' <span style="color:var(--danger)">★</span>' : ''}`;
     let input;
-    if (f.kind === 'textarea') input = `<textarea name="f_${f.id}" ${req}></textarea>`;
-    else if (f.kind === 'number') input = `<input type="number" step="any" min="0" name="f_${f.id}" ${req}>`;
-    else if (f.kind === 'date') input = `<input type="date" name="f_${f.id}" ${req}>`;
-    else input = `<input type="${f.kind === 'email' ? 'email' : 'text'}" name="f_${f.id}" maxlength="255" ${req}>`;
+    if (f.kind === 'textarea') input = `<textarea name="${name}" ${req}></textarea>`;
+    else if (f.kind === 'number') input = `<input type="number" step="any" min="0" name="${name}" ${req}>`;
+    else if (f.kind === 'date') input = `<input type="date" name="${name}" ${req}>`;
+    else if (f.kind === 'select') input = selectFieldHtml(f, name, req);
+    else if (f.kind === 'attachment') input = `<span class="upload"><input type="file" accept="image/*,application/pdf" data-change="upload"><input type="hidden" name="${name}"><span class="muted" data-status></span></span>`;
+    else input = `<input name="${name}" maxlength="255" ${req}>`;
     return `<label>${label}${input}</label>`;
   }).join('');
 }
+function selectFieldHtml(f, name, req) {
+  const free = f.options.free;
+  const opts = f.options.list.map(o => `<option value="${h(o)}">${h(o)}</option>`).join('');
+  return `<select name="${name}" ${req} ${free ? 'data-change="selectFree"' : ''}><option value="">Selecione</option>${opts}${free ? '<option value="__free__">Outra (texto livre)</option>' : ''}</select>`
+    + (free ? `<input name="${name}__free" maxlength="255" placeholder="Digite a resposta" data-free-box style="display:none;margin-top:6px">` : '');
+}
+/* Lê os valores de um formulário com campos dinâmicos. */
+function collectFields(f, fields, prefix) {
+  const out = {};
+  for (const fd of fields) {
+    const el = f.elements[prefix + fd.id];
+    let v = el ? el.value : '';
+    if (fd.kind === 'select' && v === '__free__') {
+      const free = f.elements[prefix + fd.id + '__free'];
+      v = free ? free.value : '';
+    }
+    out[fd.id] = v;
+  }
+  return out;
+}
+/* Envia o arquivo assim que é escolhido; o formulário recebe só o id do anexo. */
+async function uploadFile(input) {
+  const hidden = input.parentElement.querySelector('input[type=hidden]');
+  const status = input.parentElement.querySelector('[data-status]');
+  const file = input.files[0];
+  hidden.value = '';
+  if (!file) { status.textContent = ''; return; }
+  if (file.size > MAX_UPLOAD) { input.value = ''; status.textContent = ''; toast('Arquivo acima de 5 MB.', true); return; }
+  status.textContent = 'Enviando…';
+  try {
+    const res = await fetch('/api/attachments', {method: 'POST', credentials: 'same-origin',
+      headers: {'content-type': file.type || 'application/octet-stream', 'x-filename': encodeURIComponent(file.name)}, body: file});
+    const out = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(out.error || 'Não foi possível enviar o arquivo.');
+    hidden.value = out.id;
+    status.textContent = `✓ ${out.name}`;
+  } catch (err) { input.value = ''; status.textContent = ''; toast(err.message, true); }
+}
+function attachHtml(id) {
+  const a = S.attachments.find(x => x.id === id);
+  if (!a) return '<span class="muted">Anexo indisponível</span>';
+  const url = `/api/attachments/${a.id}`;
+  const thumb = a.mime.startsWith('image/') ? `<a href="${url}" target="_blank" rel="noopener"><img class="thumb" src="${url}" alt="${h(a.name)}"></a>` : '';
+  return `${thumb}<a href="${url}" target="_blank" rel="noopener">${h(a.name)}</a> <span class="muted">(${Math.max(1, Math.round(a.size / 1024))} KB)</span>`;
+}
+/* Valor de um campo para exibição (já escapado). */
+function valueHtml(f, v) {
+  if (!v) return '—';
+  return f.kind === 'attachment' ? attachHtml(v) : h(v);
+}
+function clientCardHtml(c) {
+  if (!c) return '';
+  return `<div class="dl" style="margin:0 0 12px"><div><dt>Contato</dt><dd>${h(c.name)}</dd></div><div><dt>Email</dt><dd>${h(c.email || '—')}</dd></div><div><dt>Telefone</dt><dd>${h(c.phone || '—')}</dd></div><div><dt>CNPJ/CPF</dt><dd>${h(c.doc || '—')}</dd></div><div><dt>Endereço</dt><dd>${h(c.address || '—')}</dd></div></div>`;
+}
+/* Dados do chamado: cliente, solicitação, setor e campos personalizados. */
+function ticketInfoBody(t) {
+  const c = S.clients.find(x => x.company === t.client) || {};
+  const sector = S.sectors.find(s => s.id === t.sectorId);
+  const first = t.messages.find(m => !m.system && !m.internal);
+  const custom = t.custom || {};
+  return `<div class="dl">
+      <div><dt>Empresa</dt><dd>${h(t.client)}</dd></div>
+      <div><dt>Contato</dt><dd>${h(c.name || '—')}</dd></div>
+      <div><dt>Email</dt><dd>${h(c.email || '—')}</dd></div>
+      <div><dt>Telefone</dt><dd>${h(c.phone || '—')}</dd></div>
+      <div><dt>CNPJ/CPF</dt><dd>${h(c.doc || '—')}</dd></div>
+      <div><dt>Endereço</dt><dd>${h(c.address || '—')}</dd></div>
+      <div><dt>Tipo de chamado</dt><dd>${h(t.category)}</dd></div>
+      <div><dt>Setor</dt><dd>${h(sector ? sector.name : '—')}</dd></div>
+      ${S.ticketFields.map(f => `<div><dt>${h(f.label)}</dt><dd>${valueHtml(f, custom[f.id])}</dd></div>`).join('')}
+    </div>
+    ${first ? `<h3>Solicitação do cliente</h3><div class="msg">${h(first.body)}</div>` : ''}`;
+}
+/* Contexto completo para validar o relatório: chamado, agenda e últimas mensagens. */
+function contextoHtml(r) {
+  const t = S.tickets.find(x => x.id === r.ticketId);
+  if (!t) return '';
+  const visits = S.agenda.filter(a => a.ticketId === t.id);
+  const msgs = t.messages.filter(m => !m.internal).slice(-6);
+  return `<h3>Contexto do chamado</h3>${ticketInfoBody(t)}
+    <div class="two" style="margin-top:12px"><div><h3>Agenda</h3>${visits.length ? visits.map(a => `<div class="msg"><strong>${fmtDate(a.date)} · ${h(a.time)}</strong> ${h(a.taskType)}<div class="muted">${h(a.technician)} · ${h(a.status)}</div></div>`).join('') : '<div class="muted">Sem visitas agendadas.</div>'}</div>
+    <div><h3>Últimas mensagens</h3>${msgs.map(m => `<div class="msg ${m.system ? 'sys' : ''}"><strong>${h(m.author)}</strong> <small>${h(m.time)}</small><div>${h(m.body)}</div></div>`).join('') || '<div class="muted">Sem mensagens.</div>'}</div></div>`;
+}
+/* Formulário de criação de campo (relatório ou chamado), com opções em lista. */
+const optRowHtml = () => `<div class="opt-row"><input name="opt" maxlength="80" placeholder="Opção"><button type="button" class="btn sm" data-act="rmOpt">Remover</button></div>`;
+function fieldAdderHtml(scope) {
+  const tpl = scope === 'report' ? `<label>Relatório<select name="template">${Object.entries(TEMPLATES).map(([tid, t]) => `<option value="${tid}">${h(t.name)}</option>`).join('')}</select></label>` : '';
+  return `<form class="stack" data-form="addField" data-scope="${scope}">
+    <div class="grid2">${tpl}
+      <label>Nome do campo<input name="label" required minlength="2" maxlength="80"></label>
+      <label>Categoria do campo<select name="kind" data-change="kindChange">${Object.entries(FIELD_KINDS).map(([k, l]) => `<option value="${k}">${l}</option>`).join('')}</select></label>
+      <label class="inline"><input type="checkbox" name="required"> Obrigatório</label>
+    </div>
+    <div data-opts-box class="stack" style="display:none">
+      <strong style="font-size:14px">O que será incluso na lista</strong>
+      <div data-opts class="stack">${optRowHtml()}${optRowHtml()}</div>
+      <div class="actions"><button type="button" class="btn sm" data-act="addOpt">+ Adicionar opção</button>
+        <label class="inline"><input type="checkbox" name="free"> Permitir texto livre (opção "Outra")</label></div>
+    </div>
+    <div class="actions"><button class="btn primary" type="submit">Adicionar campo</button></div>
+  </form>`;
+}
+function fieldRowsHtml(fields, scope, tid, c) {
+  if (!fields.length) return '<tr><td class="muted">Nenhum campo.</td></tr>';
+  return fields.map(f => {
+    const opts = f.kind === 'select' ? `<div>${h(f.options.list.join(' · ') || 'sem opções')}${f.options.free ? ' · texto livre' : ''}</div>` : '';
+    const edit = c && f.kind === 'select' ? `<button class="btn sm" data-act="editOpts" data-scope="${scope}" data-template="${h(tid)}" data-id="${h(f.id)}">Opções</button> ` : '';
+    const del = c && !(scope === 'report' && f.id === 'value') ? `<button class="btn sm" data-act="delField" data-scope="${scope}" data-template="${h(tid)}" data-id="${h(f.id)}">Excluir</button>` : '';
+    return `<tr><td>${h(f.label)}${f.required ? ' ★' : ''}</td><td class="muted">${h(FIELD_KINDS[f.kind] || f.kind)}${opts}</td><td style="text-align:right;white-space:nowrap">${edit}${del}</td></tr>`;
+  }).join('');
+}
 function detalheView(id) {
-  const t = S.tickets.find(x => x.id === Number(id));
+  const t = [...S.tickets, ...S.archivedTickets].find(x => x.id === Number(id));
   if (!t) return `<div class="card"><h2>Chamado não encontrado</h2><a href="#/chamados">Voltar aos chamados</a></div>`;
   const reps = S.reports.filter(r => r.ticketId === t.id);
-  const canClose = t.status !== 'Resolvido' && can('report') && !reps.some(r => r.status !== 'returned');
+  const canClose = !t.archived && t.status !== 'Resolvido' && can('report') && !reps.some(r => r.status !== 'returned');
   return `<p class="muted"><a href="#/chamados">Chamados</a> / #${t.id}</p>
     ${pageHead(`#${t.id} · ${t.title}`, `${t.client} · ${t.category}`)}
+    ${t.archived ? '<div class="notice">Este chamado está arquivado. Restaure-o para continuar o atendimento.</div>' : ''}
+    ${can('configure') ? `<div class="actions" style="margin-bottom:12px"><button class="btn sm" data-act="archiveTicket" data-id="${t.id}" data-v="${t.archived ? '0' : '1'}">${t.archived ? 'Restaurar chamado' : 'Arquivar chamado'}</button></div>` : ''}
     <div class="dl">
       <div><dt>Status</dt><dd><select data-change="setStatus" data-id="${t.id}" ${can('receive') ? '' : 'disabled'}>${selectOpts(STATUSES, t.status)}</select></dd></div>
       <div><dt>Responsável</dt><dd><select data-change="setAgent" data-id="${t.id}" ${can('receive') ? '' : 'disabled'}>${selectOpts(agents(), t.agent, 'Não atribuído')}</select></dd></div>
@@ -286,12 +414,13 @@ function detalheView(id) {
       <div><dt>SLA</dt><dd>${badgeSla(t.sla, t.due)}</dd></div>
       <div><dt>Criado em</dt><dd>${h(t.created)}</dd></div>
     </div>
+    <div class="card"><h2>Informações do chamado</h2>${ticketInfoBody(t)}</div>
     ${agendaTicketHtml(t)}
     <div class="two">
       <div class="card">
         <h2>Conversa</h2>
         ${t.messages.map(m => `<div class="msg ${m.system ? 'sys' : ''} ${m.internal ? 'int' : ''}"><strong>${h(m.author)}</strong> <small>${h(m.time)}${m.internal ? ' · interna' : ''}</small><div>${h(m.body)}</div></div>`).join('')}
-        ${can('receive') && t.status !== 'Resolvido' ? `<form class="stack" data-form="reply" data-id="${t.id}" style="margin-top:12px">
+        ${can('receive') && !t.archived && t.status !== 'Resolvido' ? `<form class="stack" data-form="reply" data-id="${t.id}" style="margin-top:12px">
           <textarea name="body" required maxlength="4000" placeholder="Escreva uma resposta"></textarea>
           <div class="actions"><label class="inline"><input type="checkbox" name="internal"> Nota interna</label><button class="btn primary" type="submit">Enviar</button></div>
         </form>` : ''}
@@ -303,7 +432,7 @@ function detalheView(id) {
           <form class="stack" data-form="report" data-id="${t.id}">
             <label>Tipo de relatório<select name="tpl" data-change="tplChange">${Object.entries(TEMPLATES).map(([k, v]) => `<option value="${k}">${h(v.name)}</option>`).join('')}</select></label>
             <label>Tipo de serviço<select name="svc" required><option value="">Selecione</option>${S.services.filter(s => s.active).map(s => `<option value="${h(s.id)}">${h(s.code)} · ${h(s.name)}</option>`).join('')}</select></label>
-            <div id="repFields" class="stack">${fieldsHtml('service')}</div>
+            <div id="repFields" class="stack">${fieldsHtml(TEMPLATES.service.fields, 'f_')}</div>
             <button class="btn primary" type="submit">Enviar para validação</button>
           </form>` : (t.status === 'Resolvido' ? '<div class="muted">Chamado resolvido.</div>' : (can('report') ? '' : '<div class="muted">Seu perfil não envia relatórios.</div>'))}
       </div>
@@ -311,7 +440,8 @@ function detalheView(id) {
 }
 const AGENDA_TYPES = ['Manutenção Preventiva', 'Manutenção Corretiva', 'Instalação', 'Visita técnica'];
 const AGENDA_STATUS = ['Aberta', 'Em andamento', 'Concluída', 'Cancelada'];
-const FIELD_KINDS = {text: 'Texto', textarea: 'Texto longo', date: 'Data', number: 'Número'};
+const FIELD_KINDS = {text: 'Texto', textarea: 'Texto longo', date: 'Data', number: 'Número', select: 'Lista de opções', attachment: 'Anexo (imagem ou PDF)'};
+const MAX_UPLOAD = 5 * 1024 * 1024;
 const AG_STATUS_CLASS = {'Aberta': 'ev-open', 'Em andamento': 'ev-prog', 'Concluída': 'ev-done', 'Cancelada': 'ev-cancel'};
 const MESES = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
 function todayIso() { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; }
@@ -335,7 +465,7 @@ function agendaTicketHtml(t) {
     ${items.length ? items.map(a => `<div class="cardk" style="display:flex;gap:10px;justify-content:space-between;flex-wrap:wrap;align-items:center">
       <div><strong>${fmtDate(a.date)} · ${h(a.time)}</strong> · ${h(a.taskType)}<div class="muted">${h(a.technician)} · ${h(a.address || 'Sem endereço')}</div></div>
       <select data-change="agendaStatus" data-id="${h(a.id)}" aria-label="Status do agendamento" ${can('receive') ? '' : 'disabled'}>${selectOpts(AGENDA_STATUS, a.status)}</select></div>`).join('') : '<div class="muted">Nenhuma visita agendada.</div>'}
-    ${can('receive') && t.status !== 'Resolvido' ? `<h3>Agendar visita</h3><form class="stack" data-form="agenda" data-id="${t.id}">${agendaFieldsHtml('a_')}<div class="actions"><button class="btn primary" type="submit">Agendar</button></div></form>` : ''}
+    ${can('receive') && !t.archived && t.status !== 'Resolvido' ? `<h3>Agendar visita</h3><form class="stack" data-form="agenda" data-id="${t.id}">${agendaFieldsHtml('a_')}<div class="actions"><button class="btn primary" type="submit">Agendar</button></div></form>` : ''}
   </div>`;
 }
 function agendaView() {
@@ -376,7 +506,7 @@ function kanbanView() {
     `<div class="kanban">${STATUSES.map(st => {
       const list = S.tickets.filter(t => t.status === st);
       return `<section class="col"><h3>${h(st)} <span class="muted">(${list.length})</span></h3>${list.map(t => `<div class="cardk"><a href="#/chamados/${t.id}"><strong>#${t.id} · ${h(t.title)}</strong></a><div class="muted">${h(t.client)} · ${h(t.category)}</div><div style="margin:6px 0">${badgePrio(t.priority)}</div>
-        <select data-change="moveTicket" data-id="${t.id}" aria-label="Mover chamado ${t.id}" ${can('receive') ? '' : 'disabled'}>${selectOpts(STATUSES, t.status)}</select></div>`).join('') || '<div class="muted">Nenhum</div>'}</section>`;
+        <select data-change="moveTicket" data-id="${t.id}" aria-label="Mover chamado ${t.id}" ${can('receive') ? '' : 'disabled'}>${selectOpts(STATUSES, t.status)}</select>${can('configure') ? `<button class="btn sm" data-act="archiveTicket" data-id="${t.id}" data-v="1" style="margin-top:6px">Arquivar</button>` : ''}</div>`).join('') || '<div class="muted">Nenhum</div>'}</section>`;
     }).join('')}</div>`;
 }
 function clientIssues(r) {
@@ -409,7 +539,8 @@ function reviewPanel(r) {
     <div class="actions" style="justify-content:space-between"><h2>Relatório do chamado #${r.ticketId}</h2><button class="btn sm" data-act="closeReview">Fechar</button></div>
     <p class="muted">${h(r.authorName)} · ${h(r.templateName)}${r.serviceName ? ` · ${h(r.serviceCode)} ${h(r.serviceName)}` : ''} · tipo de chamado: ${h(r.ticketCategory)}</p>
     ${r.status === 'pending' ? (issues.length ? `<div class="issues"><strong>Pendências para gerar NF-e:</strong><ul>${issues.map(i => `<li>${h(i)}</li>`).join('')}</ul></div>` : '<div class="notice">Pronto para gerar NF-e demonstrativa.</div>') : ''}
-    <dl class="dl">${r.fields.map(f => `<div><dt>${h(f.label)}</dt><dd>${h(r.values[f.id] || '—')}</dd></div>`).join('')}</dl>
+    <dl class="dl">${r.fields.map(f => `<div><dt>${h(f.label)}</dt><dd>${valueHtml(f, r.values[f.id])}</dd></div>`).join('')}</dl>
+    ${contextoHtml(r)}
     ${r.feedback ? `<div class="notice">${h(r.feedback)}</div>` : ''}
     ${r.status !== 'pending' ? '' : ok ? `<form class="stack" data-form="review" data-id="${r.id}">
         <label>Observação da revisão<textarea name="feedback" maxlength="2000"></textarea></label>
@@ -481,8 +612,8 @@ function clientesView() {
       <label>CNPJ/CPF<input name="doc" maxlength="20"></label>
       <label>Endereço<input name="address" maxlength="255" placeholder="Rua, número, bairro, cidade"></label>
       <button class="btn primary" type="submit">Salvar cliente</button></form></div>` : '') +
-    `<div class="card"><div class="table-scroll"><table><thead><tr><th>Cliente</th><th>Empresa</th><th>Email</th><th>Telefone</th><th>Documento</th><th>Chamados</th><th>Status</th></tr></thead><tbody>
-    ${S.clients.map(c => `<tr><td>${h(c.name)}</td><td>${h(c.company)}</td><td>${h(c.email)}</td><td>${h(c.phone)}</td><td>${h(c.doc)}</td><td>${S.tickets.filter(t => t.client === c.company).length}</td><td><span class="badge ${c.active ? 'b-ok' : ''}">${c.active ? 'Ativo' : 'Inativo'}</span></td></tr>`).join('')}
+    `<div class="card"><div class="table-scroll"><table><thead><tr><th>Cliente</th><th>Empresa</th><th>Email</th><th>Telefone</th><th>Documento</th><th>Chamados</th><th>Status</th><th></th></tr></thead><tbody>
+    ${S.clients.map(c => `<tr><td>${h(c.name)}</td><td>${h(c.company)}</td><td>${h(c.email)}</td><td>${h(c.phone)}</td><td>${h(c.doc)}</td><td>${S.tickets.filter(t => t.client === c.company).length}</td><td><span class="badge ${c.active ? 'b-ok' : ''}">${c.active ? 'Ativo' : 'Arquivado'}</span></td><td>${can('configure') ? `<button class="btn sm" data-act="toggleClient" data-id="${h(c.id)}" data-v="${c.active ? '0' : '1'}">${c.active ? 'Arquivar' : 'Reativar'}</button>` : ''}</td></tr>`).join('')}
     </tbody></table></div></div>`;
 }
 function tarefasView() {
@@ -491,7 +622,8 @@ function tarefasView() {
     <div class="card">${S.tasks.length ? S.tasks.map(t => `<div class="cardk" style="display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap">
       <div><button class="btn sm" data-act="toggleTask" data-id="${h(t.id)}" aria-pressed="${t.done}" ${can('receive') ? '' : 'disabled'}>${t.done ? '✓ Concluída' : 'Concluir'}</button></div>
       <div style="flex:1;min-width:200px"><strong style="${t.done ? 'text-decoration:line-through;color:var(--muted)' : ''}">${h(t.title)}</strong><div class="muted">${h(t.agent)} · ${h(t.due.split('-').reverse().join('/'))} · chamado #${t.ticket}</div></div>
-      <div>${badgePrio(t.priority)}</div></div>`).join('') : '<div class="empty">Nenhuma tarefa.</div>'}</div>
+      <div>${badgePrio(t.priority)} ${can('configure') ? `<button class="btn sm" data-act="archTask" data-id="${h(t.id)}" data-v="1">Arquivar</button>` : ''}</div></div>`).join('') : '<div class="empty">Nenhuma tarefa.</div>'}</div>
+    ${can('configure') && S.archivedTasks.length ? `<div class="card"><h2>Tarefas arquivadas</h2>${S.archivedTasks.map(t => `<div class="cardk" style="display:flex;gap:12px;justify-content:space-between;flex-wrap:wrap;align-items:center"><div><strong>${h(t.title)}</strong><div class="muted">${h(t.agent)} · chamado #${t.ticket}</div></div><button class="btn sm" data-act="archTask" data-id="${h(t.id)}" data-v="0">Restaurar</button></div>`).join('')}</div>` : ''}
     ${can('receive') ? `<div class="card"><h2>Nova tarefa</h2><form class="grid2" data-form="task">
       <label>Título<input name="title" required minlength="3" maxlength="160"></label>
       <label>Responsável<select name="agent" required>${selectOpts(agents())}</select></label>
@@ -546,13 +678,13 @@ function configView() {
       </form></div>
     <div class="card"><h2>Campos dos relatórios</h2>
       <p class="muted">Os campos aparecem no formulário de envio e no relatório. O campo "Valor (R$)" alimenta a NF-e demonstrativa e não pode ser removido.</p>
-      ${Object.entries(TEMPLATES).map(([tid, t]) => `<h3>${h(t.name)}</h3><div class="table-scroll"><table><tbody>${t.fields.map(f => `<tr><td>${h(f.label)}${f.required ? ' ★' : ''}</td><td class="muted">${FIELD_KINDS[f.kind] || h(f.kind)}</td><td style="text-align:right">${c && f.id !== 'value' ? `<button class="btn sm" data-act="delReportField" data-template="${tid}" data-id="${h(f.id)}">Excluir</button>` : ''}</td></tr>`).join('')}</tbody></table></div>`).join('')}
-      ${c ? `<h3>Novo campo</h3><form class="grid2" data-form="reportField">
-        <label>Relatório<select name="template">${Object.entries(TEMPLATES).map(([tid, t]) => `<option value="${tid}">${h(t.name)}</option>`).join('')}</select></label>
-        <label>Nome do campo<input name="label" required minlength="2" maxlength="80"></label>
-        <label>Tipo<select name="kind">${Object.entries(FIELD_KINDS).map(([k, l]) => `<option value="${k}">${l}</option>`).join('')}</select></label>
-        <label class="inline"><input type="checkbox" name="required"> Obrigatório</label>
-        <div class="actions"><button class="btn primary" type="submit">Adicionar campo</button></div></form>` : ''}
+      ${Object.entries(TEMPLATES).map(([tid, t]) => `<h3>${h(t.name)}</h3><div class="table-scroll"><table><tbody>${fieldRowsHtml(t.fields, 'report', tid, c)}</tbody></table></div>`).join('')}
+      ${c ? `<h3>Novo campo do relatório</h3>${fieldAdderHtml('report')}` : ''}
+    </div>
+    <div class="card"><h2>Campos do chamado</h2>
+      <p class="muted">Campos extras no formulário de abertura do chamado. Inclua ou remova conforme a operação, como no Auvo.</p>
+      <div class="table-scroll"><table><tbody>${fieldRowsHtml(S.ticketFields, 'ticket', '', c)}</tbody></table></div>
+      ${c ? `<h3>Novo campo do chamado</h3>${fieldAdderHtml('ticket')}` : ''}
     </div>`;
 }
 
@@ -593,6 +725,7 @@ const FORMS = {
   async newTicket(f) {
     const d = Object.fromEntries(new FormData(f));
     const payload = {title: d.title, client: d.client, category: d.category, sector: d.sector, priority: d.priority, description: d.description};
+    payload.custom = collectFields(f, S.ticketFields, 't_');
     if (f.elements.visit.checked) payload.visit = agendaPayload(f, 'a_');
     const r = await api('POST', '/api/tickets', payload);
     location.hash = `#/chamados/${r.id}`;
@@ -605,8 +738,7 @@ const FORMS = {
   },
   async report(f) {
     const tpl = f.elements.tpl.value;
-    const values = {};
-    TEMPLATES[tpl].fields.forEach(fd => { const el = f.elements['f_' + fd.id]; values[fd.id] = el ? el.value : ''; });
+    const values = collectFields(f, TEMPLATES[tpl].fields, 'f_');
     await api('POST', `/api/tickets/${f.dataset.id}/reports`, {template: tpl, service: f.elements.svc.value, values});
     return 'Relatório enviado para validação.';
   },
@@ -620,9 +752,19 @@ const FORMS = {
     G = {show: true, type: f.elements.type.value, status: f.elements.status.value, fmt: f.elements.fmt.value};
     return '';
   },
-  async reportField(f) {
-    await api('POST', '/api/report-fields', {template: f.elements.template.value, label: f.elements.label.value, kind: f.elements.kind.value, required: f.elements.required.checked});
-    return 'Campo adicionado ao relatório.';
+  async addField(f) {
+    const body = {
+      label: f.elements.label.value, kind: f.elements.kind.value, required: f.elements.required.checked,
+      options: [...f.querySelectorAll('input[name=opt]')].map(i => i.value),
+      free: f.elements.free ? f.elements.free.checked : false
+    };
+    if (f.dataset.scope === 'report') {
+      body.template = f.elements.template.value;
+      await api('POST', '/api/report-fields', body);
+      return 'Campo adicionado ao relatório.';
+    }
+    await api('POST', '/api/ticket-fields', body);
+    return 'Campo adicionado ao chamado.';
   },
   async agenda(f) {
     await api('POST', `/api/tickets/${f.dataset.id}/agenda`, agendaPayload(f, 'a_'));
@@ -663,7 +805,11 @@ const CHANGES = {
   toggleVisit(el) { const box = $('#visit-box'); if (box) box.style.display = el.checked ? 'block' : 'none'; },
   agendaStatus(el) { return act(() => api('PATCH', `/api/agenda/${el.dataset.id}`, {status: el.value}).then(() => 'Status do agendamento atualizado.')); },
   filterRep(el) { RF = el.value; },
-  tplChange(el) { const box = $('#repFields'); if (box) box.innerHTML = fieldsHtml(el.value); },
+  tplChange(el) { const box = $('#repFields'); if (box) box.innerHTML = fieldsHtml(TEMPLATES[el.value].fields, 'f_'); },
+  upload(el) { return uploadFile(el); },
+  selectFree(el) { const box = el.parentElement.querySelector('[data-free-box]'); if (box) box.style.display = el.value === '__free__' ? 'block' : 'none'; },
+  kindChange(el) { const box = el.closest('form').querySelector('[data-opts-box]'); if (box) box.style.display = el.value === 'select' ? 'block' : 'none'; },
+  clientPick(el) { const box = $('#client-info'); if (box) box.innerHTML = clientCardHtml(S.clients.find(c => c.id === el.value)); },
   setStatus(el) { return act(() => api('PATCH', `/api/tickets/${el.dataset.id}`, {status: el.value}).then(() => 'Status atualizado.')); },
   moveTicket(el) { return act(() => api('PATCH', `/api/tickets/${el.dataset.id}`, {status: el.value}).then(() => 'Chamado movido.')); },
   setAgent(el) { return act(() => api('PATCH', `/api/tickets/${el.dataset.id}`, {agent: el.value}).then(() => 'Responsável atualizado.')); },
@@ -686,10 +832,41 @@ const ACTS = {
     render();
   },
   genType(el) { G = {show: true, type: el.dataset.v, status: '', fmt: G.fmt}; render(); },
-  delReportField(el) {
-    if (!confirm('Excluir este campo do relatório? Relatórios já enviados não são alterados.')) return;
-    return act(() => api('DELETE', `/api/report-fields/${el.dataset.template}/${el.dataset.id}`, {}).then(() => 'Campo excluído.'));
+  chamTab(el) { CF.arch = el.dataset.v === 'arquivados'; render(); },
+  archiveTicket(el) {
+    const arch = el.dataset.v === '1';
+    if (arch && !confirm('Arquivar este chamado? Ele sai da lista e do Kanban. O histórico e a NF-e continuam guardados.')) return;
+    return act(() => api('PATCH', `/api/tickets/${el.dataset.id}`, {archived: arch}).then(() => {
+      if (arch) { CF.arch = false; location.hash = '#/chamados'; }
+      return arch ? 'Chamado arquivado.' : 'Chamado restaurado.';
+    }));
   },
+  toggleClient(el) {
+    const active = el.dataset.v === '1';
+    return act(() => api('PATCH', `/api/clients/${el.dataset.id}`, {active}).then(() => active ? 'Cliente reativado.' : 'Cliente arquivado.'));
+  },
+  archTask(el) {
+    const arch = el.dataset.v === '1';
+    return act(() => api('PATCH', `/api/tasks/${el.dataset.id}`, {archived: arch}).then(() => arch ? 'Tarefa arquivada.' : 'Tarefa restaurada.'));
+  },
+  delField(el) {
+    if (!confirm('Excluir este campo? Dados já salvos não são alterados.')) return;
+    const url = el.dataset.scope === 'ticket' ? `/api/ticket-fields/${el.dataset.id}` : `/api/report-fields/${el.dataset.template}/${el.dataset.id}`;
+    return act(() => api('DELETE', url, {}).then(() => 'Campo excluído.'));
+  },
+  editOpts(el) {
+    const id = el.dataset.id;
+    const field = el.dataset.scope === 'ticket' ? S.ticketFields.find(x => x.id === id) : (TEMPLATES[el.dataset.template] || {fields: []}).fields.find(x => x.id === id);
+    if (!field) return;
+    const txt = prompt('Opções da lista, separadas por ponto e vírgula (;):', field.options.list.join('; '));
+    if (txt === null) return;
+    const free = confirm('Permitir texto livre na lista (opção "Outra")? OK = sim, Cancelar = não.');
+    const options = txt.split(';').map(s => s.trim()).filter(Boolean);
+    const url = el.dataset.scope === 'ticket' ? `/api/ticket-fields/${id}` : `/api/report-fields/${el.dataset.template}/${id}`;
+    return act(() => api('PATCH', url, {options, free}).then(() => 'Opções atualizadas.'));
+  },
+  addOpt(el) { el.closest('form').querySelector('[data-opts]').insertAdjacentHTML('beforeend', optRowHtml()); },
+  rmOpt(el) { el.parentElement.remove(); },
   toggleClientForm() { showClientForm = !showClientForm; render(); },
   logout() { return api('POST', '/api/logout', {}).then(() => { S = null; renderLogin(); }); },
   csvTickets() {
