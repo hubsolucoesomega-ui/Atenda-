@@ -91,6 +91,7 @@ button:disabled{opacity:.6;cursor:default}
 
   function renderForm(d) {
     clear();
+    document.title = 'Abrir chamado · ' + d.company;
     app.appendChild(node('h1', {text: 'Abrir chamado'}));
     app.appendChild(note('Empresa: ' + d.company));
 
