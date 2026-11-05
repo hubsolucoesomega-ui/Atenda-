@@ -123,6 +123,7 @@ let CF = {q:'', status:'', cat:'', arch: false};
 let RF = '';
 let repTab = 'validacao';
 let cfgTab = 'geral';
+let chamModo = 'chamados';
 let selRep = null;
 let showClientForm = false;
 let AG = {ym: null, mode: 'mes', tec: ''};
@@ -234,9 +235,14 @@ function dashView() {
     <div class="card"><h2>Últimos chamados</h2>${ticketTable(S.tickets.slice(0, 5))}</div>`;
 }
 function chamadosView() {
-  return pageHead('Chamados', 'Receba solicitações, acompanhe conversas e conclua atendimentos.',
-    `<div class="actions"><button class="btn" data-act="csvTickets">Exportar CSV</button>${can('receive') ? '<a class="btn primary" href="#/novo">Novo chamado</a>' : ''}</div>`) + `
-    <div class="tabs no-print">${[['ativos', 'Ativos'], ['arquivados', 'Arquivados']].map(([k, l]) => `<button class="tab ${(CF.arch ? 'arquivados' : 'ativos') === k ? 'on' : ''}" data-act="chamTab" data-v="${k}">${l}</button>`).join('')}</div>
+  const abas = [['ativos', 'Ativos'], ['arquivados', 'Arquivados']];
+  if (can('configure')) abas.push(['customizar', 'Customizar chamados']);
+  const atual = chamModo === 'customizar' && can('configure') ? 'customizar' : (CF.arch ? 'arquivados' : 'ativos');
+  const tabs = `<div class="tabs no-print">${abas.map(([k, l]) => `<button class="tab ${atual === k ? 'on' : ''}" data-act="${k === 'customizar' ? 'chamModo' : 'chamTab'}" data-v="${k}">${l}</button>`).join('')}</div>`;
+  const cabeca = pageHead('Chamados', atual === 'customizar' ? 'Campos extras do formulário de abertura de chamado, como no Auvo.' : 'Receba solicitações, acompanhe conversas e conclua atendimentos.',
+    `<div class="actions"><button class="btn" data-act="csvTickets">Exportar CSV</button>${can('receive') ? '<a class="btn primary" href="#/novo">Novo chamado</a>' : ''}</div>`);
+  if (atual === 'customizar') return cabeca + tabs + customizarChamadosHtml();
+  return cabeca + tabs + `
     <div class="card">
       <form class="grid2 no-print" style="margin-bottom:12px" onsubmit="return false">
         <label>Buscar<input type="search" data-input="search" placeholder="Número, assunto ou cliente" value="${h(CF.q)}"></label>
@@ -244,6 +250,14 @@ function chamadosView() {
         <label>Tipo de chamado<select data-change="filter" data-k="cat">${selectOpts(CATEGORIES, CF.cat, 'Todos')}</select></label>
       </form>
       <div id="ticket-rows">${ticketTable(filteredTickets())}</div>
+    </div>`;
+}
+function customizarChamadosHtml() {
+  const c = can('configure');
+  return `<div class="card"><h2>Campos do chamado</h2>
+      <p class="muted">Campos extras no formulário de abertura do chamado. Inclua ou remova conforme a operação, como no Auvo.</p>
+      <div class="table-scroll"><table><tbody>${fieldRowsHtml(S.ticketFields, 'ticket', '', c)}</tbody></table></div>
+      ${c ? `<h3>Novo campo do chamado</h3>${fieldAdderHtml('ticket')}` : ''}
     </div>`;
 }
 function novoView() {
@@ -735,11 +749,7 @@ function configView() {
         <label>Alíquota ISS (%)<input type="number" step="0.01" min="0" max="5" name="issRate" value="${S.fiscal.issRate}" ${dis}></label>
         ${c ? '<button class="btn primary" type="submit">Salvar dados fiscais</button>' : ''}
       </form></div>
-    <div class="card"><h2>Campos do chamado</h2>
-      <p class="muted">Campos extras no formulário de abertura do chamado. Inclua ou remova conforme a operação, como no Auvo.</p>
-      <div class="table-scroll"><table><tbody>${fieldRowsHtml(S.ticketFields, 'ticket', '', c)}</tbody></table></div>
-      ${c ? `<h3>Novo campo do chamado</h3>${fieldAdderHtml('ticket')}` : ''}
-    </div>`;
+`;
 }
 
 function usuariosTabHtml(c) {
@@ -931,7 +941,8 @@ const ACTS = {
     render();
   },
   genType(el) { G = {show: true, type: el.dataset.v, status: '', fmt: G.fmt}; render(); },
-  chamTab(el) { CF.arch = el.dataset.v === 'arquivados'; render(); },
+  chamTab(el) { chamModo = 'chamados'; CF.arch = el.dataset.v === 'arquivados'; render(); },
+  chamModo(el) { chamModo = el.dataset.v; render(); },
   archiveTicket(el) {
     const arch = el.dataset.v === '1';
     if (arch && !confirm('Arquivar este chamado? Ele sai da lista e do Kanban. O histórico e a NF-e continuam guardados.')) return;
