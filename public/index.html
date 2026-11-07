@@ -1,0 +1,1936 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ATENDA</title>
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<meta name="theme-color" content="#070a1c">
+<style>
+:root{color-scheme:dark;
+--bg:#070a1c;--side:#090d22;--surface:#0f1433;--s2:#151b42;--s3:#1d2453;--input:#0b1030;
+--border:#222a59;--border2:#2f3872;--text:#f3f4fb;--muted:#a3a9cd;--faint:#7a81ad;
+--primary:#8b5cf6;--primary-strong:#7c3aed;--primary-soft:rgba(139,92,246,.16);--lilac:#c4b5fd;
+--ok:#34d399;--ok-soft:rgba(52,211,153,.13);--warn:#fbbf24;--warn-soft:rgba(251,191,36,.13);--orange:#fb923c;--orange-soft:rgba(251,146,60,.14);
+--danger:#f87171;--danger-soft:rgba(248,113,113,.14);--info:#7dd3fc;--info-soft:rgba(125,211,252,.13);--indigo:#a5b4fc;--indigo-soft:rgba(165,180,252,.13);
+--radius:14px;--shadow:0 12px 32px rgba(2,4,20,.45);--ring:0 0 0 3px rgba(139,92,246,.32)}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--text);font:14.5px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",sans-serif;-webkit-font-smoothing:antialiased}
+body::before{content:"";position:fixed;inset:0;pointer-events:none;background:radial-gradient(900px 520px at 88% -12%,rgba(124,58,237,.13),transparent 60%);z-index:0}
+a{color:var(--lilac);text-decoration:none} a:hover{color:#fff}
+h1{font-size:24px;line-height:1.2;margin:0 0 4px;font-weight:700;letter-spacing:-.01em}
+h2{font-size:16px;margin:0 0 12px;font-weight:650}
+h3{font-size:14px;margin:16px 0 8px;font-weight:650}
+.sub{color:var(--muted);margin:0}
+.muted{color:var(--muted);font-size:13px}
+.num{font-variant-numeric:tabular-nums}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+svg.i{width:18px;height:18px;flex:none;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+
+/* Estrutura: menu lateral fixo + cabeçalho */
+.layout{position:relative;z-index:1;display:grid;grid-template-columns:252px minmax(0,1fr);min-height:100vh}
+aside.side{position:sticky;top:0;height:100vh;display:flex;flex-direction:column;background:var(--side);border-right:1px solid var(--border);overflow-y:auto}
+.brandbox{display:flex;align-items:center;gap:11px;padding:20px 18px 16px}
+.brandbox svg{width:40px;height:40px;flex:none}
+.wordmark{display:flex;flex-direction:column;line-height:1}
+.wordmark b{font-size:20px;letter-spacing:.09em;font-weight:800;color:#fff}
+.wordmark small{font-size:9px;letter-spacing:.3em;color:var(--muted);margin-top:6px;text-transform:uppercase}
+.side-cta{padding:2px 14px 4px}
+.side-cta .btn{width:100%;justify-content:center}
+nav#nav{display:flex;flex-direction:column;gap:2px;padding:6px 10px 14px;flex:1}
+nav .sec{font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--faint);padding:14px 10px 6px;font-weight:600}
+nav a{display:flex;align-items:center;gap:11px;padding:9px 10px;border-radius:10px;color:var(--muted);font-weight:500;font-size:14px;transition:background .15s,color .15s}
+nav a:hover{background:var(--s2);color:var(--text)}
+nav a.on{background:linear-gradient(90deg,rgba(139,92,246,.26),rgba(139,92,246,.05));color:#fff;box-shadow:inset 3px 0 0 var(--primary)}
+nav a.on svg.i{color:var(--lilac)}
+nav a .cnt{margin-left:auto;background:var(--primary-strong);color:#fff;font-size:11px;font-weight:700;border-radius:999px;padding:1px 7px;min-width:22px;text-align:center}
+nav a .cnt.alert{background:var(--danger);color:#1a0505}
+.side-foot{padding:14px 18px 18px;border-top:1px solid var(--border);font-size:12px;color:var(--muted);display:flex;align-items:center;gap:10px;line-height:1.35}
+.side-foot small{color:var(--faint);font-size:11px}
+.omega{width:30px;height:30px;border-radius:9px;background:var(--primary-soft);color:var(--lilac);display:inline-flex;align-items:center;justify-content:center;font-weight:700;font-size:16px;flex:none}
+.mainc{min-width:0;display:flex;flex-direction:column}
+header.top{position:sticky;top:0;z-index:30;background:rgba(7,10,28,.84);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid var(--border)}
+.bar{display:flex;align-items:center;gap:14px;padding:12px 28px;min-height:68px}
+.greet{min-width:0}
+.greet strong{display:block;font-size:15px;white-space:nowrap}
+.greet span{font-size:12px;color:var(--muted)}
+.gsearch{position:relative;flex:1;max-width:460px;margin-left:auto}
+.gsearch input{padding-left:38px;background:var(--surface)}
+.gsearch > svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--faint);pointer-events:none}
+.gres{position:absolute;top:calc(100% + 6px);left:0;right:0;background:var(--surface);border:1px solid var(--border2);border-radius:12px;box-shadow:var(--shadow);padding:6px;display:none;z-index:40;max-height:60vh;overflow:auto}
+.gres.show{display:block}
+.gres a{display:flex;gap:10px;align-items:center;padding:8px 10px;border-radius:8px;color:var(--text);font-size:13.5px}
+.gres a:hover,.gres a:focus{background:var(--s2);outline:none}
+.gres .gh{font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);padding:8px 10px 4px}
+.iconbtn{position:relative;display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:10px;border:1px solid var(--border);background:var(--surface);color:var(--muted);cursor:pointer;flex:none}
+.iconbtn:hover{color:#fff;border-color:var(--border2)}
+.iconbtn .dot{position:absolute;top:-6px;right:-6px;background:var(--danger);color:#1a0505;font-size:10.5px;font-weight:800;border-radius:999px;padding:1px 6px;border:2px solid var(--bg)}
+.who{display:flex;align-items:center;gap:8px}
+.who details{position:relative}
+.who summary{list-style:none;display:flex;align-items:center;gap:10px;cursor:pointer;padding:4px 8px 4px 4px;border-radius:12px}
+.who summary::-webkit-details-marker{display:none}
+.who summary:hover{background:var(--s2)}
+.avatar{width:36px;height:36px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;color:#fff;background:linear-gradient(135deg,#8b5cf6,#4c1d95);flex:none}
+.avatar.sm{width:32px;height:32px;font-size:12px}
+.avatar.alt{background:linear-gradient(135deg,#334155,#1e293b)}
+.who-txt{display:flex;flex-direction:column;line-height:1.25}
+.who-txt b{font-size:13.5px}
+.who-txt span{font-size:12px;color:var(--lilac)}
+.menu-pop{position:absolute;right:0;top:calc(100% + 6px);min-width:210px;background:var(--surface);border:1px solid var(--border2);border-radius:12px;box-shadow:var(--shadow);padding:6px;z-index:45}
+.menu-pop a,.menu-pop button{display:flex;width:100%;align-items:center;gap:10px;padding:8px 10px;border-radius:8px;color:var(--text);background:none;border:0;font:inherit;font-size:13.5px;cursor:pointer;text-align:left;white-space:nowrap}
+.menu-pop a:hover,.menu-pop button:hover{background:var(--s2)}
+.hamb{display:none}
+.wrap{width:100%;max-width:1360px;margin:0 auto;padding:26px 28px 56px}
+#progress{position:fixed;top:0;left:0;height:3px;width:0;background:linear-gradient(90deg,var(--primary),var(--lilac));z-index:100;opacity:0}
+body.busy #progress{opacity:1;animation:prog 1.1s ease-in-out infinite}
+@keyframes prog{0%{width:0;left:0}50%{width:55%;left:22%}100%{width:0;left:100%}}
+
+/* Cabeçalho de página e abas */
+.page-head{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap;margin-bottom:20px}
+.crumb{font-size:13px;color:var(--faint);margin:0 0 10px}
+.crumb a{color:var(--muted)}
+.tabs{display:flex;gap:4px;margin:0 0 18px;padding:4px;background:var(--surface);border:1px solid var(--border);border-radius:12px;width:max-content;max-width:100%;overflow-x:auto}
+.tab{padding:7px 14px;border:0;border-radius:9px;background:none;color:var(--muted);font:inherit;font-weight:600;font-size:13.5px;cursor:pointer;white-space:nowrap}
+.tab:hover{color:var(--text)}
+.tab.on{background:var(--primary-strong);color:#fff;box-shadow:0 4px 14px rgba(124,58,237,.35)}
+
+/* Cards e grades */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:18px}
+.card-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap}
+.card-head h2{margin:0}
+.grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(170px,1fr))}
+.kgrid{display:grid;gap:14px;grid-template-columns:repeat(4,minmax(0,1fr));margin-bottom:18px}
+.kpi{position:relative;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px 16px 14px;display:flex;flex-direction:column;gap:2px;text-align:left;color:inherit;font:inherit}
+.grid .kpi{background:var(--s2);border-color:transparent}
+button.kpi,a.kpi{cursor:pointer;transition:border-color .15s,transform .15s}
+button.kpi:hover,a.kpi:hover{border-color:var(--border2);transform:translateY(-1px);color:inherit}
+.kpi .ki{width:34px;height:34px;border-radius:10px;display:inline-flex;align-items:center;justify-content:center;margin-bottom:8px;background:var(--primary-soft);color:var(--lilac)}
+.kpi strong{display:block;font-size:28px;font-weight:750;line-height:1.1;font-variant-numeric:tabular-nums}
+.kpi span{color:var(--muted);font-size:13px}
+.k-ok .ki{background:var(--ok-soft);color:var(--ok)} .k-warn .ki{background:var(--warn-soft);color:var(--warn)} .k-late .ki{background:var(--danger-soft);color:var(--danger)} .k-info .ki{background:var(--info-soft);color:var(--info)} .k-orange .ki{background:var(--orange-soft);color:var(--orange)} .k-indigo .ki{background:var(--indigo-soft);color:var(--indigo)}
+.k-late strong{color:var(--danger)}
+.two{display:grid;gap:18px;grid-template-columns:repeat(auto-fit,minmax(300px,1fr))}
+.two > .card{margin-bottom:0}
+.two + .card,.two + .two{margin-top:18px}
+.dash{display:grid;gap:18px;grid-template-columns:minmax(0,1fr) 340px;align-items:start;margin-bottom:18px}
+.desk{display:grid;gap:18px;grid-template-columns:minmax(0,1fr) 360px;align-items:start}
+.col-stack{display:flex;flex-direction:column;min-width:0}
+
+/* Tabelas */
+.table-scroll{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13.5px}
+th,td{text-align:left;padding:11px 10px;border-bottom:1px solid var(--border);vertical-align:middle}
+th{color:var(--faint);font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.07em;white-space:nowrap}
+tbody tr:last-child td{border-bottom:0}
+tr.link{cursor:pointer;transition:background .12s}
+tr.link:hover td,tr.link:focus-visible td{background:rgba(139,92,246,.07)}
+tr.link:focus-visible{outline:none}
+tr.att-late td:first-child{box-shadow:inset 3px 0 0 var(--danger)}
+tr.att-warn td:first-child{box-shadow:inset 3px 0 0 var(--warn)}
+td.tid{font-weight:700;color:var(--lilac);white-space:nowrap;font-variant-numeric:tabular-nums}
+.t-title{font-weight:600;color:var(--text)}
+.count-line{font-size:13px;color:var(--muted);margin:0 0 6px}
+
+/* Etiquetas */
+.badge{display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:999px;font-size:12px;font-weight:600;background:var(--s3);color:var(--muted);white-space:nowrap;line-height:1.5}
+.badge.dot::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor;flex:none}
+.b-urg{background:var(--danger-soft);color:var(--danger)} .b-alta{background:var(--orange-soft);color:var(--orange)} .b-normal{background:var(--primary-soft);color:var(--lilac)} .b-baixa{background:var(--s3);color:var(--muted)}
+.b-ok{background:var(--ok-soft);color:var(--ok)} .b-warn{background:var(--warn-soft);color:var(--warn)} .b-late{background:var(--danger-soft);color:var(--danger)}
+.b-pend{background:var(--warn-soft);color:var(--warn)} .b-appr{background:var(--ok-soft);color:var(--ok)} .b-ret{background:var(--danger-soft);color:var(--danger)}
+.st-novo{background:var(--primary-soft);color:var(--lilac)} .st-triagem{background:var(--indigo-soft);color:var(--indigo)} .st-atend{background:var(--info-soft);color:var(--info)} .st-aguard{background:var(--warn-soft);color:var(--warn)} .st-resol{background:var(--ok-soft);color:var(--ok)}
+.pill-ok{color:var(--ok)} .pill-late{color:var(--danger)}
+.due{font-size:12px;color:var(--muted);display:block;margin-top:3px}
+.notice{background:var(--primary-soft);border:1px solid rgba(139,92,246,.3);color:var(--text);border-radius:12px;padding:12px 14px;font-size:13.5px;margin:0 0 14px}
+.issues{background:var(--danger-soft);border:1px solid rgba(248,113,113,.35);color:#fecaca;border-radius:12px;padding:12px 14px;font-size:13.5px;margin:0 0 14px}
+.issues ul{margin:4px 0 0;padding-left:18px}
+
+/* Formulários */
+form.stack,.stack{display:grid;gap:14px}
+form.grid2,.grid2{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));align-items:end}
+.filters{display:grid;gap:12px;grid-template-columns:minmax(220px,2fr) repeat(4,minmax(130px,1fr));align-items:end;margin-bottom:12px}
+.filters-2{display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;margin-bottom:12px}
+.filters-2 label{width:170px}
+.fmore{display:contents}
+.filters-2.fmore{display:flex}
+.ftoggle{display:none}
+.t-title{display:inline-block;min-width:160px}
+label{display:flex;flex-direction:column;gap:6px;font-size:12.5px;color:var(--muted);font-weight:500}
+label.inline{flex-direction:row;align-items:center;gap:8px;color:var(--text);font-size:13.5px}
+input,select,textarea{font:inherit;font-size:14px;color:var(--text);background:var(--input);border:1px solid var(--border2);border-radius:10px;padding:10px 12px;width:100%;transition:border-color .15s,box-shadow .15s}
+input::placeholder,textarea::placeholder{color:var(--faint)}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--primary);box-shadow:var(--ring)}
+input:disabled,select:disabled,textarea:disabled{opacity:.6}
+input[type=checkbox]{width:16px;height:16px;accent-color:var(--primary);padding:0;flex:none}
+input[type=file]{padding:8px;font-size:13px}
+input[type=file]::file-selector-button{font:inherit;font-weight:600;border:1px solid var(--border2);background:var(--s2);color:var(--text);border-radius:8px;padding:6px 10px;margin-right:10px;cursor:pointer}
+textarea{min-height:96px;resize:vertical}
+fieldset{border:1px solid var(--border);border-radius:12px;padding:14px;margin:0;min-width:0}
+fieldset.plain{border:0;padding:0}
+legend{color:var(--muted);font-size:12.5px;padding:0 6px;font-weight:600}
+.block{border:1px solid var(--border);border-radius:16px;padding:20px;background:var(--surface)}
+.block-h{display:flex;align-items:flex-start;gap:12px;margin:0 0 16px}
+.block-h .step{width:28px;height:28px;border-radius:9px;background:var(--primary-soft);color:var(--lilac);display:inline-flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex:none}
+.block-h h2{margin:2px 0 0;font-size:15px}
+.block-h p{margin:2px 0 0;font-size:12.5px;color:var(--muted)}
+.form-actions{display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;position:sticky;bottom:0;padding:16px 0 6px;background:linear-gradient(transparent,var(--bg) 35%);z-index:5}
+
+/* Botões */
+.btn{appearance:none;font:inherit;font-size:13.5px;font-weight:600;border:1px solid var(--border2);background:var(--s2);color:var(--text);padding:9px 15px;border-radius:10px;cursor:pointer;white-space:nowrap;text-decoration:none;display:inline-flex;align-items:center;gap:8px;line-height:1.3;transition:background .15s,border-color .15s,box-shadow .15s}
+.btn:hover{background:var(--s3);color:#fff}
+.btn:focus-visible,.tab:focus-visible,.iconbtn:focus-visible,nav a:focus-visible,.chip:focus-visible,.kpi:focus-visible{outline:none;box-shadow:var(--ring)}
+.btn.primary{background:linear-gradient(180deg,#8b5cf6,#7c3aed);border-color:#8b5cf6;color:#fff;box-shadow:0 6px 18px rgba(124,58,237,.3)}
+.btn.primary:hover{background:linear-gradient(180deg,#9d74f8,#8b5cf6)}
+.btn.ghost{background:transparent;border-color:transparent;color:var(--muted)}
+.btn.ghost:hover{background:var(--s2);color:#fff}
+.btn.danger{background:var(--danger-soft);border-color:rgba(248,113,113,.45);color:var(--danger)}
+.btn.danger:hover{background:rgba(248,113,113,.25);color:#fff}
+.btn.sm{padding:6px 11px;font-size:12.5px;border-radius:8px}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.btn.loading{position:relative;color:transparent!important;pointer-events:none}
+.btn.loading svg{opacity:0}
+.btn.loading::after{content:"";position:absolute;inset:0;margin:auto;width:16px;height:16px;border-radius:50%;border:2px solid rgba(255,255,255,.35);border-top-color:#fff;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 14px}
+.chip{font:inherit;font-size:12.5px;font-weight:600;border:1px solid var(--border2);background:transparent;color:var(--muted);padding:6px 12px;border-radius:999px;cursor:pointer;display:inline-flex;gap:6px;align-items:center}
+.chip:hover{color:#fff}
+.chip.on{background:var(--primary-soft);border-color:rgba(139,92,246,.6);color:#fff}
+.chip .n{font-variant-numeric:tabular-nums;color:var(--lilac)}
+
+/* Menu de ações por linha */
+details.menu{position:relative;display:inline-block}
+details.menu summary{list-style:none;width:32px;height:32px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;color:var(--muted);cursor:pointer;border:1px solid transparent}
+details.menu summary::-webkit-details-marker{display:none}
+details.menu summary:hover,details.menu[open] summary{background:var(--s2);border-color:var(--border2);color:#fff}
+
+/* Gráficos */
+.bars{display:grid;gap:11px}
+.bar-row{display:grid;grid-template-columns:minmax(90px,150px) 1fr 40px;gap:12px;align-items:center;font-size:13px;border-radius:6px}
+.bar-row > span{color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bar-track{height:12px;display:flex;align-items:center}
+.bar-fill{background:#8b5cf6;height:12px;border-radius:0 4px 4px 0;min-width:3px;transition:filter .15s}
+.bar-row:hover .bar-fill,.bar-row:focus .bar-fill{filter:brightness(1.25)}
+.bar-row:focus{outline:none;box-shadow:var(--ring)}
+.bar-row strong{text-align:right;font-variant-numeric:tabular-nums}
+.trend{width:100%;height:auto;display:block}
+.trend .col{fill:#8b5cf6}
+.trend .hit{fill:transparent}
+.trend g{outline:none}
+.trend g:hover .col,.trend g:focus .col{fill:#b79bff}
+.trend g:focus .hit{fill:rgba(139,92,246,.12)}
+.trend .grid-l{stroke:var(--border);stroke-width:1}
+.trend text{fill:var(--faint);font-size:11px;font-family:inherit}
+.meter{display:flex;height:12px;border-radius:999px;overflow:hidden;gap:2px;margin:12px 0}
+.meter span{display:block;height:100%}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12.5px;color:var(--muted)}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+.hero-n{font-size:34px;font-weight:750;line-height:1;font-variant-numeric:tabular-nums}
+#tip{position:fixed;left:0;top:0;z-index:120;pointer-events:none;background:#0b1030;border:1px solid var(--border2);border-radius:10px;padding:8px 11px;box-shadow:var(--shadow);font-size:12.5px;opacity:0;transition:opacity .1s;max-width:240px}
+#tip.show{opacity:1}
+#tip b{display:block;font-size:16px;font-variant-numeric:tabular-nums}
+#tip span{color:var(--muted)}
+details.data-table summary{cursor:pointer;color:var(--muted);font-size:12.5px;margin-top:12px;width:max-content}
+
+/* Listas laterais */
+.mini{display:flex;flex-direction:column}
+.mini .mi{display:flex;gap:10px;align-items:flex-start;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);color:var(--text)}
+.mini .mi:last-child{border-bottom:0}
+a.mi:hover .mt{color:var(--lilac)}
+.mini .mt{font-size:13.5px;font-weight:600;display:block}
+.mini .ms{font-size:12px;color:var(--muted);display:block}
+.quick{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.quick .btn{justify-content:flex-start;width:100%}
+
+/* Conversa do chamado */
+.msg{border-left:3px solid var(--border2);padding:8px 12px;margin:0 0 10px;border-radius:0 10px 10px 0;background:rgba(21,27,66,.55)}
+.msg.sys{border-color:var(--warn);background:var(--warn-soft)}
+.msg.int{border-color:var(--primary)}
+.msg small{color:var(--muted)}
+.thread{display:flex;flex-direction:column;gap:14px}
+.tm{display:flex;gap:12px;align-items:flex-start}
+.tm .bubble{flex:1;min-width:0;background:var(--s2);border:1px solid var(--border);border-radius:4px 14px 14px 14px;padding:10px 14px}
+.tm .bh{display:flex;gap:8px;align-items:baseline;flex-wrap:wrap;margin-bottom:4px}
+.tm .bh b{font-size:13.5px}
+.tm .bh small{color:var(--faint);font-size:12px}
+.tm .bb{white-space:pre-wrap;overflow-wrap:anywhere}
+.tm.int .bubble{background:rgba(251,191,36,.07);border-color:rgba(251,191,36,.35)}
+.tm .tag{font-size:10.5px;font-weight:700;color:var(--warn);text-transform:uppercase;letter-spacing:.06em}
+.ev-sys{display:flex;gap:10px;align-items:center;font-size:12.5px;color:var(--muted);padding:0 2px}
+.ev-sys::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--primary);box-shadow:0 0 0 4px var(--primary-soft);flex:none;margin:0 12px}
+.ev-sys small{color:var(--faint);margin-left:auto;white-space:nowrap;padding-left:8px}
+.composer{margin-top:18px;border:1px solid var(--border2);border-radius:14px;padding:10px 12px;background:var(--input)}
+.composer:focus-within{border-color:var(--primary);box-shadow:var(--ring)}
+.composer textarea{border:0;background:transparent;padding:4px;min-height:84px;box-shadow:none!important}
+.composer .actions{justify-content:space-between;border-top:1px solid var(--border);padding-top:10px;margin-top:6px}
+.ticket-hero{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;flex-wrap:wrap;margin-bottom:20px}
+.ticket-hero h1{overflow-wrap:anywhere}
+.idchip{display:inline-block;font-weight:700;color:var(--lilac);background:var(--primary-soft);border-radius:8px;padding:2px 9px;font-size:13px;margin-bottom:8px}
+.ticket-hero .meta{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.props .pr{display:grid;grid-template-columns:112px minmax(0,1fr);gap:10px;align-items:center;padding:9px 0;border-bottom:1px solid var(--border);font-size:13.5px}
+.props .pr:last-child{border-bottom:0}
+.props .pr > span{color:var(--muted);font-size:12.5px}
+.props select{padding:8px 10px}
+
+/* Kanban */
+.kanban{display:grid;gap:14px;grid-auto-flow:column;grid-auto-columns:minmax(210px,1fr);overflow-x:auto;padding-bottom:8px;align-items:start}
+.kcol{background:var(--surface);border:1px solid var(--border);border-top:3px solid var(--kc,var(--primary));border-radius:14px;padding:12px;min-height:180px}
+.kcol h3{margin:2px 2px 12px;font-size:13.5px;display:flex;justify-content:space-between;align-items:center;gap:8px}
+.cardk{background:var(--s2);border:1px solid var(--border);border-radius:12px;padding:12px;margin-bottom:10px}
+.cardk strong{display:block;font-size:13.5px;color:var(--text)}
+.kcol .cardk select{margin-top:10px;padding:7px 10px;font-size:13px}
+.kid{font-weight:700;color:var(--lilac);font-size:12.5px}
+
+.dl{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));margin:0 0 14px}
+.dl div{background:var(--s2);border-radius:10px;padding:10px 12px;min-width:0}
+.dl dt{color:var(--faint);font-size:11px;text-transform:uppercase;letter-spacing:.06em;font-weight:600}
+.dl dd{margin:3px 0 0;white-space:pre-wrap;overflow-wrap:anywhere}
+.empty{color:var(--muted);padding:28px 18px;text-align:center;font-size:13.5px}
+.empty::before{content:"";display:block;width:44px;height:44px;margin:0 auto 10px;border-radius:12px;background:var(--primary-soft) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23c4b5fd' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M22 12h-6l-2 3h-4l-2-3H2'/%3E%3Cpath d='M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z'/%3E%3C/svg%3E") center/22px no-repeat}
+.card.muted{padding:24px}
+
+/* Login */
+body.auth .layout{grid-template-columns:1fr}
+body.auth aside.side,body.auth header.top{display:none}
+body.auth .wrap{max-width:none;padding:0}
+.login-wrap{min-height:100vh;display:grid;place-items:center;padding:32px 16px}
+.login{width:100%;max-width:420px}
+.logo-hero{display:block;width:100%;max-width:400px;height:auto;margin:0 auto 14px;-webkit-mask-image:radial-gradient(ellipse 72% 68% at 50% 50%,#000 58%,transparent 100%);mask-image:radial-gradient(ellipse 72% 68% at 50% 50%,#000 58%,transparent 100%)}
+.login .card{padding:28px}
+.login h1{font-size:20px}
+.login-foot{text-align:center;color:var(--faint);font-size:12px;margin-top:16px}
+
+/* Agenda */
+.cal-wrap{overflow-x:auto}
+.cal{display:grid;grid-template-columns:repeat(7,minmax(96px,1fr));gap:1px;background:var(--border);border:1px solid var(--border);border-radius:14px;overflow:hidden;min-width:700px}
+.cal .wd{background:var(--s2);padding:8px;font-size:11px;color:var(--faint);text-align:center;font-weight:700;text-transform:uppercase;letter-spacing:.06em}
+.cal .day{background:var(--surface);min-height:104px;padding:6px;font-size:12px}
+.cal .day.off{background:#0b0f2a}
+.cal .dnum{font-weight:600;margin-bottom:4px;color:var(--muted)}
+.cal .day.today .dnum{background:var(--primary-strong);color:#fff;border-radius:999px;display:inline-block;padding:0 8px}
+.ev{display:block;font-size:11.5px;border-radius:6px;padding:3px 6px;margin:3px 0;color:var(--text);background:var(--s3);text-decoration:none;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;border-left:3px solid var(--faint)}
+.ev-open{background:var(--primary-soft);border-color:var(--primary)} .ev-prog{background:var(--warn-soft);border-color:var(--warn)} .ev-done{background:var(--ok-soft);border-color:var(--ok)} .ev-cancel{background:var(--danger-soft);border-color:var(--danger);text-decoration:line-through}
+
+/* Aviso, janela e dica */
+#toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(160px);opacity:0;visibility:hidden;background:var(--s3);color:var(--text);border:1px solid var(--border2);padding:12px 16px 12px 12px;border-radius:12px;transition:transform .25s,opacity .25s,visibility .25s;z-index:110;max-width:92vw;font-size:13.5px;box-shadow:var(--shadow);display:flex;gap:10px;align-items:center}
+#toast::before{content:"✓";width:24px;height:24px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;background:var(--ok-soft);color:var(--ok);font-weight:800;font-size:12px;flex:none}
+#toast.show{transform:translateX(-50%) translateY(0);opacity:1;visibility:visible}
+#toast.err{border-color:rgba(248,113,113,.55)}
+#toast.err::before{content:"!";background:var(--danger-soft);color:var(--danger)}
+#modal{position:fixed;inset:0;z-index:90;display:none;align-items:center;justify-content:center;padding:16px;background:rgba(3,5,16,.72);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)}
+#modal.show{display:flex}
+.modal-box{width:100%;max-width:500px;max-height:90vh;overflow:auto;background:var(--surface);border:1px solid var(--border2);border-radius:18px;box-shadow:0 30px 80px rgba(0,0,0,.55);padding:22px;animation:pop .16s ease-out}
+.modal-box.wide{max-width:720px}
+.modal-top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:6px}
+.modal-top h2{font-size:18px;margin:4px 0 0}
+.modal-box .mb{color:var(--muted);margin:0 0 16px}
+.modal-box .actions.end{justify-content:flex-end;margin-top:18px}
+@keyframes pop{from{transform:scale(.97);opacity:0}to{transform:none;opacity:1}}
+.scrim{display:none}
+.upload{display:flex;flex-direction:column;gap:6px}
+.opt-row{display:flex;gap:8px;align-items:center}
+.opt-row input{flex:1}
+.thumb{display:block;max-width:100%;max-height:200px;border-radius:10px;margin:6px 0}
+.checks{display:flex;flex-wrap:wrap;gap:10px 20px}.check{flex-direction:row!important;align-items:center;gap:8px;font-weight:500;color:var(--text)!important;font-size:13.5px!important}
+.skel{display:grid;place-items:center;min-height:50vh;color:var(--muted);gap:12px;align-content:center}
+.spinner{width:30px;height:30px;border-radius:50%;border:3px solid var(--s3);border-top-color:var(--primary);animation:spin .8s linear infinite}
+
+/* Responsivo */
+@media (max-width:1180px){.dash,.desk{grid-template-columns:1fr}.kgrid{grid-template-columns:repeat(2,minmax(0,1fr))}.filters{grid-template-columns:repeat(2,minmax(0,1fr))}.filters .f-q{grid-column:1/-1}}
+@media (max-width:960px){
+  .layout{grid-template-columns:1fr}
+  aside.side{position:fixed;left:0;top:0;bottom:0;width:276px;z-index:60;transform:translateX(-100%);transition:transform .22s ease}
+  body.nav-open aside.side{transform:none;box-shadow:var(--shadow)}
+  body.nav-open .scrim{display:block;position:fixed;inset:0;background:rgba(3,5,16,.6);z-index:55}
+  .hamb{display:inline-flex}
+  .bar{padding:10px 16px;gap:10px;min-height:60px}
+  .wrap{padding:20px 16px 48px}
+  .greet{display:none}
+  .gsearch{max-width:none}
+  .who-txt{display:none}
+}
+@media (max-width:640px){
+  h1{font-size:21px}
+  input,select,textarea{font-size:16px}
+  .kgrid{gap:10px}
+  .kpi{padding:13px}
+  .kpi strong{font-size:23px}
+  .kpi .ki{width:30px;height:30px;margin-bottom:6px}
+  .filters{grid-template-columns:1fr}
+  .ftoggle{display:inline-flex;justify-content:center}
+  .fmore{display:none}
+  .fmore.open{display:contents}
+  .filters-2.fmore{display:none}
+  .filters-2.fmore.open{display:flex}
+  .t-title{min-width:0}
+  .filters-2 label{width:calc(50% - 5px)}
+  .card,.block{padding:16px}
+  .quick{grid-template-columns:1fr}
+  .props .pr{grid-template-columns:96px minmax(0,1fr)}
+  .page-head > .actions{width:100%}
+  table.rtable thead{display:none}
+  table.rtable,table.rtable tbody,table.rtable tr,table.rtable td{display:block;width:100%}
+  table.rtable tr{border:1px solid var(--border);border-radius:12px;margin-bottom:10px;padding:8px 12px;background:var(--s2)}
+  table.rtable td{border:0;padding:5px 0;display:flex;justify-content:space-between;align-items:center;gap:12px;text-align:right}
+  table.rtable td::before{content:attr(data-label);color:var(--faint);font-size:11px;text-transform:uppercase;letter-spacing:.06em;text-align:left;flex:none}
+  table.rtable td.tid::before{content:none}
+  table.rtable td:first-child{box-shadow:none!important}
+  table.rtable tr.att-late{border-color:rgba(248,113,113,.55)} table.rtable tr.att-warn{border-color:rgba(251,191,36,.55)}
+  table.rtable .due{display:inline;margin:0 0 0 6px}
+  .bar-row{grid-template-columns:92px 1fr 34px}
+  .ev-sys small{display:none}
+}
+@media print{
+  aside.side,header.top,.no-print,#toast,#modal,#tip,#progress{display:none!important}
+  body{background:#fff;color:#000} body::before{display:none}
+  .layout{display:block} .wrap{padding:0;max-width:none}
+  .card,.kpi,.grid .kpi{background:#fff;border-color:#bbb;color:#000} .muted,.sub,th,.kpi span{color:#444}
+  .bar-fill{background:#555} th,td{border-color:#ccc}
+  .badge{background:#eee!important;color:#000!important}
+}
+</style>
+</head>
+<body>
+<div id="progress" aria-hidden="true"></div>
+<div class="layout">
+  <aside class="side" aria-label="Menu principal">
+    <div class="brandbox"><svg viewBox="0 0 64 64" aria-hidden="true"><defs><linearGradient id="lgside" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#b79bff"/><stop offset="1" stop-color="#6d28d9"/></linearGradient></defs><path d="M23.3 50A20 20 0 1 1 40.7 50" fill="none" stroke="url(#lgside)" stroke-width="7.5"/><rect x="9" y="47" width="17" height="7" rx="1.5" fill="url(#lgside)"/><rect x="38" y="47" width="17" height="7" rx="1.5" fill="url(#lgside)"/><path d="M27 23h10a7 7 0 0 1 0 14h-6l-5 4.5v-4.9A7 7 0 0 1 27 23z" fill="none" stroke="#ece6ff" stroke-width="2.4" stroke-linejoin="round"/><circle cx="27.5" cy="30" r="1.6" fill="#ece6ff"/><circle cx="32" cy="30" r="1.6" fill="#ece6ff"/><circle cx="36.5" cy="30" r="1.6" fill="#ece6ff"/></svg><div class="wordmark"><b>ATENDA</b><small>Soluções Omega</small></div></div>
+    <div class="side-cta" id="side-cta"></div>
+    <nav id="nav" aria-label="Módulos"></nav>
+    <div class="side-foot"><span class="omega" aria-hidden="true">Ω</span><span>Soluções Omega<br><small>ATENDA · Central de atendimento</small></span></div>
+  </aside>
+  <div class="scrim" data-act="closeNav" aria-hidden="true"></div>
+  <div class="mainc">
+    <header class="top"><div class="bar" id="topbar"></div></header>
+    <main class="wrap" id="app"><div class="skel"><div class="spinner"></div><span>Carregando…</span></div></main>
+  </div>
+</div>
+<div id="toast" role="status" aria-live="polite"></div>
+<div id="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title"></div>
+<div id="tip" role="tooltip"></div>
+
+<script>
+/* ==================== Estado e constantes ==================== */
+let S = null;                         // estado vindo de /api/state
+let STATUSES = [], PRIORITIES = [], CATEGORIES = [], SECTOR_TYPES = [], TEMPLATES = {}, ROLE_LABEL = {};
+const PERM_LABEL = {configure:'Gerenciar configurações', receive:'Receber e atender chamados', report:'Enviar relatórios', review:'Validar relatórios'};
+const ROUTES = {dashboard:'Dashboard', chamados:'Chamados', agenda:'Agenda', kanban:'Kanban', tarefas:'Tarefas', clientes:'Clientes', nfe:'NF-e', relatorios:'Relatórios', sla:'SLA', colaboradores:'Colaboradores', avisos:'Avisos', config:'Configurações'};
+// Menu lateral agrupado. As telas aparecem conforme o perfil de acesso.
+const NAV_SECTIONS = [['Operação', ['dashboard', 'chamados', 'agenda', 'kanban', 'tarefas']], ['Gestão', ['clientes', 'nfe', 'relatorios', 'sla']], ['Equipe', ['colaboradores', 'avisos']], ['Sistema', ['config']]];
+const SLA_LABEL = {ok:'Em dia', warning:'Em risco', late:'Vencido'};
+const SLA_CLASS = {ok:'b-ok', warning:'b-warn', late:'b-late'};
+const PRIO_CLASS = {Urgente:'b-urg', Alta:'b-alta', Normal:'b-normal', Baixa:'b-baixa'};
+const STATUS_CLASS = {'Novo':'st-novo', 'Em triagem':'st-triagem', 'Em atendimento':'st-atend', 'Aguardando cliente':'st-aguard', 'Resolvido':'st-resol'};
+const STATUS_COLOR = {'Novo':'#c4b5fd', 'Em triagem':'#a5b4fc', 'Em atendimento':'#7dd3fc', 'Aguardando cliente':'#fbbf24', 'Resolvido':'#34d399'};
+/* Ícones (traço, 24×24). */
+const IC = {
+  dashboard: '<rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/>',
+  chamados: '<path d="M4 7a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v2.5a2.5 2.5 0 0 0 0 5V17a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-2.5a2.5 2.5 0 0 0 0-5z"/><path d="M14 5v2M14 11v2M14 17v2"/>',
+  agenda: '<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18M8 14h.01M12 14h.01M16 14h.01M8 17.5h.01M12 17.5h.01"/>',
+  kanban: '<rect x="3" y="4" width="5" height="16" rx="1.5"/><rect x="10" y="4" width="5" height="11" rx="1.5"/><rect x="17" y="4" width="4" height="7" rx="1.5"/>',
+  tarefas: '<rect x="3" y="3" width="18" height="18" rx="3"/><path d="m8 12 2.8 2.8L16.5 9"/>',
+  clientes: '<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0M16 4.6a3.5 3.5 0 0 1 0 6.8M18.5 14.4A6.5 6.5 0 0 1 21.5 20"/>',
+  nfe: '<path d="M6 2h9l5 5v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z"/><path d="M14 2v6h6M8 13h8M8 17h5"/>',
+  relatorios: '<path d="M3 3v18h18"/><path d="M8 16v-4M12 16V8M16 16v-6M20 16v-2"/>',
+  sla: '<circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2.5M9.5 2h5"/>',
+  colaboradores: '<rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="11" r="2.5"/><path d="M5.5 17a3.5 3.5 0 0 1 7 0M15 9.5h3M15 13.5h3"/>',
+  avisos: '<path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/>',
+  config: '<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/>',
+  search: '<circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>',
+  plus: '<path d="M12 5v14M5 12h14"/>',
+  logout: '<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5M21 12H9"/>',
+  menu: '<path d="M4 6h16M4 12h16M4 18h16"/>',
+  dots: '<circle cx="5" cy="12" r="1.2"/><circle cx="12" cy="12" r="1.2"/><circle cx="19" cy="12" r="1.2"/>',
+  download: '<path d="M12 3v12M7 10l5 5 5-5M5 21h14"/>',
+  alert: '<path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4M12 17h.01"/>',
+  check: '<path d="M20 6 9 17l-5-5"/>',
+  play: '<circle cx="12" cy="12" r="9"/><path d="m10 8.5 5 3.5-5 3.5z"/>',
+  hourglass: '<path d="M6 2h12M6 22h12M7 2v4a5 5 0 0 0 10 0V2M7 22v-4a5 5 0 0 1 10 0v4"/>',
+  inbox: '<path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.5 5.1 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.5-6.9A2 2 0 0 0 16.8 4H7.2a2 2 0 0 0-1.7 1.1z"/>',
+  user: '<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>',
+  archive: '<rect x="3" y="4" width="18" height="5" rx="1"/><path d="M5 9v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V9M10 13h4"/>',
+  eye: '<path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',
+  close: '<path d="M18 6 6 18M6 6l12 12"/>',
+  send: '<path d="m22 2-7 20-4-9-9-4z"/><path d="M22 2 11 13"/>',
+  link: '<path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7"/><path d="M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7"/>'
+};
+const ic = k => `<svg class="i" viewBox="0 0 24 24" aria-hidden="true">${IC[k] || ''}</svg>`;
+const initials = n => String(n || '?').split(/\s+/).filter(Boolean).slice(0, 2).map(w => w[0]).join('').toUpperCase();
+// Datas do servidor vêm como "dd/mm/aaaa, hh:mm".
+const parseBr = s => { const m = /(\d{2})\/(\d{2})\/(\d{4})/.exec(s || ''); return m ? `${m[3]}-${m[2]}-${m[1]}` : ''; };
+const aberto = t => t.status !== 'Resolvido';
+const precisaAtencao = t => aberto(t) && (t.sla === 'late' || t.sla === 'warning' || t.priority === 'Urgente');
+
+/* UI local (não persistido) */
+const CF0 = {q:'', status:'', cat:'', pri:'', agent:'', from:'', to:'', quick:''};
+let CF = {...CF0, arch: false};
+let DP = 30;          // período do gráfico de evolução (dias)
+let MODAL = null;     // janela aberta: {title, body, wide}
+let lastHash = '';
+let FOPEN = false;    // filtros abertos no celular
+let RF = '';
+let repTab = 'validacao';
+let cfgTab = 'geral';
+let chamModo = 'chamados';
+let selRep = null;
+let AG = {ym: null, mode: 'mes', tec: ''};
+let G = {show:false, type:'', status:'', fmt:'resumo'};
+let busy = false;
+
+const $ = (s, r = document) => r.querySelector(s);
+const h = v => String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const brl = n => Number(n || 0).toLocaleString('pt-BR', {style:'currency', currency:'BRL'});
+const pct = (a, b) => b ? Math.round(a / b * 100) : 0;
+const digits = s => String(s || '').replace(/\D/g, '');
+const csvEsc = v => { const t = String(v ?? ''); return '"' + (/^[=+@\-]/.test(t) ? "'" + t : t).replaceAll('"', '""') + '"'; };
+const slug = s => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+const can = p => !!S && S.me.perms.includes(p);
+// Telas liberadas pelo perfil de acesso (a API também confere).
+const tela = k => !!S && (S.me.screens || []).includes(k);
+const agents = () => S.users.filter(u => u.active).map(u => u.name);
+const fiscalOk = () => digits(S.fiscal.cnpj).length === 14 && !!S.fiscal.legalName.trim() && S.fiscal.issRate > 0;
+
+function syncConsts() {
+  STATUSES = S.statuses; PRIORITIES = S.priorities; CATEGORIES = S.categories;
+  SECTOR_TYPES = S.sectorTypes; TEMPLATES = S.templates; ROLE_LABEL = S.roleLabels;
+}
+function toast(msg, err) {
+  const t = $('#toast'); t.textContent = msg; t.className = 'show' + (err ? ' err' : '');
+  clearTimeout(toast.t); toast.t = setTimeout(() => { t.className = ''; }, 3200);
+}
+function download(name, text, type) {
+  const url = URL.createObjectURL(new Blob([text], {type}));
+  const a = document.createElement('a'); a.href = url; a.download = name; a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+/* ==================== API ==================== */
+async function api(method, path, data) {
+  const opt = {method, credentials: 'same-origin', headers: {}};
+  if (data !== undefined) { opt.headers['content-type'] = 'application/json'; opt.body = JSON.stringify(data); }
+  const res = await fetch(path, opt);
+  let out = {}; try { out = await res.json(); } catch (e) { /* sem corpo */ }
+  if (res.status === 401 && path !== '/api/login') { S = null; renderLogin(); throw new Error(out.error || 'Sessão expirada.'); }
+  if (!res.ok) throw new Error(out.error || 'Não foi possível concluir a ação.');
+  return out;
+}
+async function refresh() { S = await api('GET', '/api/state'); syncConsts(); }
+/** Executa uma ação no servidor, recarrega o estado e redesenha a tela. */
+async function act(fn, btn) {
+  if (busy) return;
+  busy = true;
+  document.body.classList.add('busy');
+  if (btn) btn.classList.add('loading');
+  try {
+    const msg = await fn();
+    await refresh();
+    if (msg) toast(msg);
+    render();
+  } catch (err) { toast(err.message, true); }
+  finally {
+    busy = false;
+    document.body.classList.remove('busy');
+    if (btn) btn.classList.remove('loading');
+  }
+}
+/* Janela (modal) e confirmação. */
+function renderModal() {
+  const m = $('#modal');
+  if (!MODAL) { m.className = ''; m.innerHTML = ''; return; }
+  const jaAberta = m.classList.contains('show') && m.dataset.title === MODAL.title;
+  if (jaAberta) return; // não apaga o que a pessoa digitou
+  m.className = 'show'; m.dataset.title = MODAL.title;
+  m.innerHTML = `<div class="modal-box ${MODAL.wide ? 'wide' : ''}"><div class="modal-top"><h2 id="modal-title">${h(MODAL.title)}</h2><button class="iconbtn" data-act="closeModal" aria-label="Fechar" style="width:34px;height:34px">${ic('close')}</button></div>${MODAL.body}</div>`;
+  const f = m.querySelector('input:not([type=hidden]):not([type=checkbox]),select,textarea,[data-ok]');
+  if (f) setTimeout(() => f.focus(), 30);
+}
+function openModal(title, body, wide) { MODAL = {title, body, wide}; $('#modal').className = ''; renderModal(); }
+function closeModal() {
+  MODAL = null; renderModal();
+  if (ask.res) { const r = ask.res; ask.res = null; r(false); }
+}
+function ask(title, msg, okLabel = 'Confirmar', danger = false) {
+  return new Promise(res => {
+    if (ask.res) ask.res(false);
+    openModal(title, `<p class="mb">${h(msg)}</p><div class="actions end"><button class="btn ghost" data-act="closeModal">Cancelar</button><button class="btn ${danger ? 'danger' : 'primary'}" data-act="askOk" data-ok>${h(okLabel)}</button></div>`);
+    ask.res = res;
+  });
+}
+
+/* ==================== Telas ==================== */
+function selectOpts(list, cur, first) {
+  return (first !== undefined ? `<option value="">${h(first)}</option>` : '') + list.map(v => `<option value="${h(v)}" ${v === cur ? 'selected' : ''}>${h(v)}</option>`).join('');
+}
+function badgePrio(p) { return `<span class="badge ${PRIO_CLASS[p] || ''}">${h(p)}</span>`; }
+function statusBadge(s) { return `<span class="badge dot ${STATUS_CLASS[s] || ''}">${h(s)}</span>`; }
+function badgeSla(sla, due) { return `<span class="badge dot ${SLA_CLASS[sla]}">${SLA_LABEL[sla]}</span><span class="due">${h(due)}</span>`; }
+function reportBadge(s) {
+  return s === 'approved' ? '<span class="badge b-appr">Validado</span>' : s === 'returned' ? '<span class="badge b-ret">Devolvido</span>' : '<span class="badge b-pend">Aguardando validação</span>';
+}
+function pageHead(title, desc, extra = '') {
+  return `<div class="page-head"><div><h1>${h(title)}</h1>${desc ? `<p class="sub">${h(desc)}</p>` : ''}</div>${extra ? `<div class="actions no-print">${extra}</div>` : ''}</div>`;
+}
+/* Barras horizontais de uma série: comprimento relativo ao maior valor; valor ao lado e dica no hover. */
+function bars(entries, total) {
+  if (!entries.length) return '<div class="empty">Sem dados</div>';
+  const max = Math.max(...entries.map(([, n]) => n), 1);
+  return '<div class="bars">' + entries.map(([l, n]) => `<div class="bar-row" tabindex="0" data-tip="${n}" data-tip-l="${h(l)} · ${pct(n, total)}% do total"><span title="${h(l)}">${h(l)}</span><div class="bar-track"><div class="bar-fill" style="width:${n / max * 100}%"></div></div><strong>${n}</strong></div>`).join('') + '</div>';
+}
+function countBy(list, fn, order) {
+  const m = new Map((order || []).map(k => [k, 0]));
+  list.forEach(x => { const k = fn(x); m.set(k, (m.get(k) || 0) + 1); });
+  return [...m.entries()].filter(([, n]) => n > 0);
+}
+function summarizeTickets(list) {
+  const total = list.length, resolved = list.filter(t => t.status === 'Resolvido').length;
+  return {total, resolved, open: total - resolved,
+    urgent: list.filter(t => t.priority === 'Urgente' || t.priority === 'Alta').length,
+    ok: list.filter(t => t.sla === 'ok').length, warning: list.filter(t => t.sla === 'warning').length, late: list.filter(t => t.sla === 'late').length};
+}
+function ticketTable(list) {
+  if (!list.length) return '<div class="empty">Nenhum chamado encontrado.</div>';
+  return `<div class="table-scroll"><table class="rtable"><thead><tr><th>Nº</th><th>Assunto</th><th>Cliente</th><th>Tipo</th><th>Prioridade</th><th>Status</th><th>Responsável</th><th>SLA</th><th class="no-print"><span class="sr">Ações</span></th></tr></thead><tbody>
+    ${list.map(t => {
+      const att = aberto(t) && t.sla === 'late' ? 'att-late' : (aberto(t) && t.sla === 'warning' ? 'att-warn' : '');
+      return `<tr class="link ${att}" tabindex="0" data-go="#/chamados/${t.id}"><td class="tid">#${t.id}</td><td data-label="Assunto"><span class="t-title">${h(t.title)}</span></td><td data-label="Cliente">${h(t.client)}</td><td data-label="Tipo">${h(t.category)}</td><td data-label="Prioridade">${badgePrio(t.priority)}</td><td data-label="Status">${statusBadge(t.status)}</td><td data-label="Responsável">${h(t.agent)}</td><td data-label="SLA">${badgeSla(t.sla, t.due)}</td><td data-label="Ações" class="no-print">${rowMenu(t)}</td></tr>`;
+    }).join('')}
+  </tbody></table></div>`;
+}
+function rowMenu(t) {
+  return `<details class="menu"><summary aria-label="Ações do chamado #${t.id}">${ic('dots')}</summary><div class="menu-pop">
+    <a href="#/chamados/${t.id}">${ic('eye')} Abrir chamado</a>
+    ${can('configure') ? `<button data-act="archiveTicket" data-id="${t.id}" data-v="${t.archived ? '0' : '1'}">${ic('archive')} ${t.archived ? 'Restaurar chamado' : 'Arquivar chamado'}</button>` : ''}
+  </div></details>`;
+}
+function filteredTickets() {
+  const q = CF.q.trim().toLowerCase().replace(/^#/, '');
+  return (CF.arch ? S.archivedTickets : S.tickets).filter(t => {
+    if (q && !`${t.id} ${t.title} ${t.client}`.toLowerCase().includes(q)) return false;
+    if (CF.status && t.status !== CF.status) return false;
+    if (CF.cat && t.category !== CF.cat) return false;
+    if (CF.pri && t.priority !== CF.pri) return false;
+    if (CF.agent && t.agent !== CF.agent) return false;
+    if (CF.from || CF.to) {
+      const d = parseBr(t.created);
+      if (!d || (CF.from && d < CF.from) || (CF.to && d > CF.to)) return false;
+    }
+    if (CF.quick === 'atencao' && !precisaAtencao(t)) return false;
+    if (CF.quick === 'novos' && !(t.status === 'Novo' || t.status === 'Em triagem')) return false;
+    if (CF.quick === 'abertos' && !aberto(t)) return false;
+    if (CF.quick === 'vencidos' && !(aberto(t) && t.sla === 'late')) return false;
+    if (CF.quick === 'meus' && t.agent !== S.me.name) return false;
+    return true;
+  });
+}
+
+const niceMax = m => m <= 4 ? 4 : m <= 10 ? Math.ceil(m / 2) * 2 : (p => Math.ceil(m / p) * p)(Math.pow(10, Math.floor(Math.log10(m))));
+const isoDay = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+/* Colunas por dia (uma série, sem legenda). Cada dia tem área de hover do tamanho da faixa. */
+function trendHtml() {
+  const dias = [];
+  for (let i = DP - 1; i >= 0; i--) { const d = new Date(); d.setHours(12, 0, 0, 0); d.setDate(d.getDate() - i); dias.push(isoDay(d)); }
+  const cont = Object.fromEntries(dias.map(d => [d, 0]));
+  [...S.tickets, ...S.archivedTickets].forEach(t => { const d = parseBr(t.created); if (d in cont) cont[d]++; });
+  const vals = dias.map(d => cont[d]);
+  const total = vals.reduce((a, b) => a + b, 0);
+  const top = niceMax(Math.max(...vals, 1));
+  const W = innerWidth < 700 ? 380 : 640, H = innerWidth < 700 ? 190 : 210, L = 30, R = 4, T = 10, B = 28, pw = W - L - R, ph = H - T - B;
+  const step = pw / dias.length, bw = Math.min(16, Math.max(3, step * 0.6));
+  const y = v => T + ph - v / top * ph;
+  const every = Math.ceil(dias.length / (W < 500 ? 4 : 7));
+  let svg = '';
+  [0, top / 2, top].forEach(v => { svg += `<line class="grid-l" x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}"/><text x="${L - 8}" y="${y(v) + 4}" text-anchor="end">${Math.round(v)}</text>`; });
+  dias.forEach((d, i) => {
+    const v = vals[i], x = L + i * step + (step - bw) / 2, hg = v / top * ph;
+    const bar = !v ? '' : (hg > 6 ? `<rect class="col" x="${x}" y="${y(v)}" width="${bw}" height="${hg}" rx="3"/><rect class="col" x="${x}" y="${y(v) + hg / 2}" width="${bw}" height="${hg / 2}"/>` : `<rect class="col" x="${x}" y="${y(v)}" width="${bw}" height="${hg}"/>`);
+    svg += `<g tabindex="0" data-tip="${v}" data-tip-l="${v === 1 ? 'chamado aberto' : 'chamados abertos'} em ${fmtDate(d)}" aria-label="${fmtDate(d)}: ${v}"><rect class="hit" x="${L + i * step}" y="${T}" width="${step}" height="${ph}"/>${bar}</g>`;
+    if ((i % every === 0 && dias.length - 1 - i >= every / 2) || i === dias.length - 1) svg += `<text x="${L + i * step + step / 2}" y="${H - 8}" text-anchor="middle">${d.slice(8, 10)}/${d.slice(5, 7)}</text>`;
+  });
+  const linhas = dias.map((d, i) => [d, vals[i]]).filter(([, v]) => v).reverse();
+  return {total, html: `<svg class="trend" viewBox="0 0 ${W} ${H}" role="img" aria-label="Chamados abertos por dia nos últimos ${DP} dias. Total: ${total}.">${svg}</svg>
+    <details class="data-table"><summary>Ver dados em tabela</summary>${linhas.length ? `<div class="table-scroll"><table><thead><tr><th>Dia</th><th>Chamados abertos</th></tr></thead><tbody>${linhas.map(([d, v]) => `<tr><td>${fmtDate(d)}</td><td class="num">${v}</td></tr>`).join('')}</tbody></table></div>` : '<p class="muted">Nenhum chamado aberto no período.</p>'}</details>`};
+}
+function miniList(list, right, vazio, sub = t => t.client) {
+  if (!list.length) return `<p class="muted" style="margin:0">${vazio}</p>`;
+  const tag = tela('chamados');
+  return `<div class="mini">${list.map(t => `<${tag ? `a href="#/chamados/${t.id}"` : 'div'} class="mi"><span style="min-width:0"><span class="mt">#${t.id} · ${h(t.title)}</span><span class="ms">${h(sub(t))}</span></span>${right(t)}</${tag ? 'a' : 'div'}>`).join('')}</div>`;
+}
+function dashView() {
+  const T = S.tickets;
+  const by = st => T.filter(t => t.status === st).length;
+  const abertos = T.filter(aberto);
+  const pending = S.reports.filter(r => r.status === 'pending').length;
+  const vencidos = abertos.filter(t => t.sla === 'late').length;
+  const ch = tela('chamados');
+  const kpi = (cls, icon, n, label, attrs) => {
+    const inner = `<span class="ki">${ic(icon)}</span><strong>${n}</strong><span>${label}</span>`;
+    if (!attrs) return `<div class="kpi ${cls}">${inner}</div>`;
+    return attrs.startsWith('href') ? `<a class="kpi ${cls}" ${attrs}>${inner}</a>` : `<button class="kpi ${cls}" ${attrs}>${inner}</button>`;
+  };
+  const go = (k, v) => ch ? `data-act="kpiGo" data-k="${k}" data-v="${h(v)}"` : '';
+  const kpis = `<div class="kgrid">
+    ${kpi('', 'chamados', T.length, 'Total de chamados', go('quick', ''))}
+    ${kpi('k-indigo', 'inbox', by('Novo') + by('Em triagem'), 'Em aberto (novos e em triagem)', go('quick', 'novos'))}
+    ${kpi('k-info', 'play', by('Em atendimento'), 'Em andamento', go('status', 'Em atendimento'))}
+    ${kpi('k-warn', 'hourglass', by('Aguardando cliente'), 'Aguardando cliente', go('status', 'Aguardando cliente'))}
+    ${kpi('k-ok', 'check', by('Resolvido'), 'Concluídos', go('status', 'Resolvido'))}
+    ${kpi('k-late', 'alert', vencidos, 'SLA vencido', go('quick', 'vencidos'))}
+    ${kpi('k-orange', 'relatorios', pending, 'Relatórios aguardando validação', tela('relatorios') ? 'href="#/relatorios"' : '')}
+    ${kpi('', 'nfe', S.invoices.length, 'NF-e demonstrativas', tela('nfe') ? 'href="#/nfe"' : '')}
+  </div>`;
+  const tr = trendHtml();
+  const periodo = `<div class="chips" style="margin:0" role="group" aria-label="Período">${[7, 30, 90].map(d => `<button class="chip ${DP === d ? 'on' : ''}" data-act="dashP" data-v="${d}" aria-pressed="${DP === d}">${d} dias</button>`).join('')}</div>`;
+  const so = abertos.filter(t => t.sla === 'ok').length, sw = abertos.filter(t => t.sla === 'warning').length, sn = abertos.length;
+  const seg = (n, c, l) => n ? `<span style="width:${n / sn * 100}%;background:${c}" data-tip="${n}" data-tip-l="${l}"></span>` : '';
+  const sev = {late: 0, warning: 1, ok: 2};
+  const venc = abertos.filter(t => t.sla !== 'ok').sort((a, b) => sev[a.sla] - sev[b.sla] || a.id - b.id).slice(0, 5);
+  const prio = abertos.filter(t => t.priority === 'Urgente' || t.priority === 'Alta').sort((a, b) => PRIORITIES.indexOf(a.priority) - PRIORITIES.indexOf(b.priority) || b.id - a.id).slice(0, 5);
+  const qa = [];
+  if (can('receive') && tela('novo')) qa.push(`<a class="btn primary" href="#/novo">${ic('plus')} Novo chamado</a>`);
+  if (can('receive') && tela('clientes')) qa.push(`<button class="btn" data-act="toggleClientForm">${ic('clientes')} Novo cliente</button>`);
+  if (tela('agenda')) qa.push(`<a class="btn" href="#/agenda">${ic('agenda')} Agenda</a>`);
+  if (tela('kanban')) qa.push(`<a class="btn" href="#/kanban">${ic('kanban')} Kanban</a>`);
+  if (tela('relatorios')) qa.push(`<a class="btn" href="#/relatorios">${ic('relatorios')} Relatórios</a>`);
+  if (ch) qa.push(`<button class="btn" data-act="csvTickets">${ic('download')} Exportar CSV</button>`);
+  return pageHead('Dashboard', 'Visão gerencial e operacional do atendimento.') + kpis + `
+    <div class="dash">
+      <div class="col-stack">
+        <div class="card"><div class="card-head"><div><h2>Evolução dos chamados</h2><span class="muted">${tr.total} aberto(s) nos últimos ${DP} dias</span></div>${periodo}</div>${tr.html}</div>
+        <div class="two">
+          <div class="card"><h2>Chamados por status</h2>${bars(countBy(T, t => t.status, STATUSES), T.length)}</div>
+          <div class="card"><h2>Chamados por prioridade</h2>${bars(countBy(T, t => t.priority, PRIORITIES), T.length)}</div>
+        </div>
+        <div class="two">
+          <div class="card"><h2>Chamados por tipo</h2>${bars(countBy(T, t => t.category, CATEGORIES), T.length)}</div>
+          <div class="card"><h2>Chamados prioritários</h2>${miniList(prio, t => badgePrio(t.priority), 'Nenhum chamado urgente ou de alta prioridade em aberto.')}</div>
+        </div>
+      </div>
+      <div class="col-stack">
+        ${qa.length ? `<div class="card"><h2>Ações rápidas</h2><div class="quick">${qa.join('')}</div></div>` : ''}
+        <div class="card"><div class="card-head"><h2>Visão geral de SLA</h2>${tela('sla') ? '<a class="btn ghost sm" href="#/sla">Políticas</a>' : ''}</div>
+          ${sn ? `<div><span class="hero-n">${pct(so, sn)}%</span> <span class="muted">dos ${sn} chamados em aberto estão em dia</span></div>
+          <div class="meter">${seg(so, '#34d399', 'em dia')}${seg(sw, '#fbbf24', 'em risco')}${seg(vencidos, '#f87171', 'vencidos')}</div>
+          <div class="legend"><span><i style="background:#34d399"></i>Em dia ${so}</span><span><i style="background:#fbbf24"></i>Em risco ${sw}</span><span><i style="background:#f87171"></i>Vencido ${vencidos}</span></div>` : '<p class="muted" style="margin:0">Nenhum chamado em aberto.</p>'}
+        </div>
+        <div class="card"><h2>Próximos vencimentos</h2>${miniList(venc, t => `<span class="badge dot ${SLA_CLASS[t.sla]}">${SLA_LABEL[t.sla]}</span>`, 'Nenhum chamado em risco de SLA.', t => `${t.client} · ${t.due}`)}</div>
+      </div>
+    </div>
+    <div class="card"><div class="card-head"><h2>Últimos chamados</h2>${ch ? '<a class="btn ghost sm" href="#/chamados">Ver todos</a>' : ''}</div>${ticketTable(T.slice(0, 6))}</div>`;
+}
+function chamadosView() {
+  const abas = [['ativos', 'Ativos'], ['arquivados', 'Arquivados']];
+  if (can('configure')) abas.push(['customizar', 'Customizar chamados']);
+  const atual = chamModo === 'customizar' && can('configure') ? 'customizar' : (CF.arch ? 'arquivados' : 'ativos');
+  const tabs = `<div class="tabs no-print" role="tablist">${abas.map(([k, l]) => `<button class="tab ${atual === k ? 'on' : ''}" role="tab" aria-selected="${atual === k}" data-act="${k === 'customizar' ? 'chamModo' : 'chamTab'}" data-v="${k}">${l}</button>`).join('')}</div>`;
+  const cabeca = pageHead('Chamados', atual === 'customizar' ? 'Campos extras do formulário de abertura de chamado, como no Auvo.' : 'Receba solicitações, acompanhe conversas e conclua atendimentos.',
+    `<button class="btn" data-act="csvTickets">${ic('download')} Exportar CSV</button>${can('receive') && tela('novo') ? `<a class="btn primary" href="#/novo">${ic('plus')} Novo chamado</a>` : ''}`);
+  if (atual === 'customizar') return cabeca + tabs + customizarChamadosHtml();
+  const base = CF.arch ? S.archivedTickets : S.tickets;
+  const rapidos = [['', 'Todos', base.length], ['atencao', 'Precisam de atenção', base.filter(precisaAtencao).length],
+    ['novos', 'Novos e em triagem', base.filter(t => t.status === 'Novo' || t.status === 'Em triagem').length],
+    ['abertos', 'Não concluídos', base.filter(aberto).length], ['vencidos', 'SLA vencido', base.filter(t => aberto(t) && t.sla === 'late').length],
+    ['meus', 'Atribuídos a mim', base.filter(t => t.agent === S.me.name).length]];
+  const list = filteredTickets();
+  const temFiltro = Object.keys(CF0).some(k => CF[k]);
+  const nFiltros = ['status', 'cat', 'pri', 'agent', 'from', 'to'].filter(k => CF[k]).length;
+  return cabeca + tabs + `
+    <div class="card">
+      <div class="chips no-print" role="group" aria-label="Filtros rápidos">${rapidos.map(([k, l, n]) => `<button class="chip ${CF.quick === k ? 'on' : ''}" data-act="quickF" data-v="${k}" aria-pressed="${CF.quick === k}">${l} <span class="n">${n}</span></button>`).join('')}</div>
+      <form class="filters no-print" onsubmit="return false">
+        <label class="f-q">Buscar<input type="search" data-input="search" placeholder="Número, assunto ou cliente" value="${h(CF.q)}"></label>
+        <button type="button" class="btn ftoggle" data-act="toggleF" aria-expanded="${FOPEN}">${ic('search')} ${FOPEN ? 'Ocultar filtros' : 'Mais filtros'}${nFiltros ? ` (${nFiltros})` : ''}</button>
+        <div class="fmore ${FOPEN ? 'open' : ''}">
+        <label>Status<select data-change="filter" data-k="status">${selectOpts(STATUSES, CF.status, 'Todos')}</select></label>
+        <label>Tipo de chamado<select data-change="filter" data-k="cat">${selectOpts(CATEGORIES, CF.cat, 'Todos')}</select></label>
+        <label>Prioridade<select data-change="filter" data-k="pri">${selectOpts(PRIORITIES, CF.pri, 'Todas')}</select></label>
+        <label>Responsável<select data-change="filter" data-k="agent">${selectOpts([...new Set(['Não atribuído', ...agents()])], CF.agent, 'Todos')}</select></label>
+        </div>
+      </form>
+      <div class="filters-2 no-print fmore ${FOPEN ? 'open' : ''}">
+        <label>Aberto de<input type="date" data-change="filter" data-k="from" value="${h(CF.from)}"></label>
+        <label>Até<input type="date" data-change="filter" data-k="to" value="${h(CF.to)}"></label>
+        ${temFiltro ? '<button class="btn ghost sm" data-act="clearF">Limpar filtros</button>' : ''}
+      </div>
+      <p class="count-line" id="ticket-count">${list.length} chamado(s)</p>
+      <div id="ticket-rows">${ticketTable(list)}</div>
+    </div>`;
+}
+function customizarChamadosHtml() {
+  const c = can('configure');
+  return `<div class="card"><h2>Campos do chamado</h2>
+      <p class="muted">Campos extras no formulário de abertura do chamado. Inclua ou remova conforme a operação, como no Auvo.</p>
+      <div class="table-scroll"><table><tbody>${fieldRowsHtml(S.ticketFields, 'ticket', '', c)}</tbody></table></div>
+      ${c ? `<h3>Novo campo do chamado</h3>${fieldAdderHtml('ticket')}` : ''}
+    </div>`;
+}
+const fmtMin = m => m < 60 ? `${m} min` : (m % 60 ? `${Math.floor(m / 60)} h ${m % 60} min` : `${m / 60} h`);
+function slaInfoHtml(p) {
+  const pol = S.sla[p];
+  if (!pol) return '';
+  return `<div class="dl" style="margin:0"><div><dt>Prioridade</dt><dd>${badgePrio(p)}</dd></div><div><dt>Primeira resposta</dt><dd>até ${fmtMin(pol.resp)}</dd></div><div><dt>Resolução</dt><dd>até ${pol.res} h</dd></div></div>
+    <p class="muted" style="margin:10px 0 0">Prazos da política de SLA para esta prioridade (tela SLA).</p>`;
+}
+function novoView() {
+  if (!can('receive')) return pageHead('Novo chamado', '') + '<div class="card empty">Seu perfil não abre chamados.</div>';
+  const anexos = S.ticketFields.filter(f => f.kind === 'attachment'), outros = S.ticketFields.filter(f => f.kind !== 'attachment');
+  let n = 0;
+  const bloco = (titulo, desc, corpo) => `<section class="block"><div class="block-h"><span class="step">${++n}</span><div><h2>${titulo}</h2>${desc ? `<p>${desc}</p>` : ''}</div></div>${corpo}</section>`;
+  return pageHead('Novo chamado', 'Registre uma solicitação do cliente.', `<a class="btn ghost" href="#/chamados">Cancelar</a>`) + `
+    <form class="stack" data-form="newTicket" style="gap:16px">
+      ${bloco('Dados do cliente', 'Quem está pedindo o atendimento.', `<label>Cliente<select name="client" required data-change="clientPick"><option value="">Selecione</option>${S.clients.filter(c => c.active).map(c => `<option value="${h(c.id)}">${h(c.company)}</option>`).join('')}</select></label><div id="client-info" style="margin-top:12px"></div>`)}
+      ${bloco('Assunto e descrição', 'Um título curto e os detalhes do que está acontecendo.', `<div class="stack">
+        <label>Assunto<input name="title" required minlength="5" maxlength="160" placeholder="Qual é a solicitação?"></label>
+        <label>Descrição detalhada<textarea name="description" required maxlength="4000" placeholder="O que aconteceu, desde quando e o que já foi tentado."></textarea></label></div>`)}
+      ${bloco('Classificação e responsável', 'Tipo, setor e prioridade definem a fila e o prazo.', `<div class="grid2">
+        <label>Tipo de chamado<select name="category" required><option value="">Selecione</option>${selectOpts(CATEGORIES)}</select></label>
+        <label>Setor<select name="sector" required><option value="">Selecione</option>${S.sectors.filter(s => s.active).map(s => `<option value="${h(s.id)}">${h(s.name)}</option>`).join('')}</select></label>
+        <label>Prioridade<select name="priority" required data-change="prioPick">${selectOpts(PRIORITIES, 'Normal')}</select></label>
+        ${tela('chamados') ? `<label>Responsável<select name="agent">${selectOpts(agents(), '', 'Não atribuído')}</select></label>` : ''}</div>`)}
+      ${outros.length ? bloco('Informações adicionais', '', `<fieldset class="plain"><legend class="sr">Informações adicionais</legend><div class="grid2">${fieldsHtml(outros, 't_')}</div></fieldset>`) : ''}
+      ${bloco('Anexos', anexos.length ? 'Imagem ou PDF, até 5 MB cada.' : '', anexos.length ? `<fieldset class="plain"><legend class="sr">Anexos</legend><div class="grid2">${fieldsHtml(anexos, 't_')}</div></fieldset>`
+        : `<p class="muted" style="margin:0">Nenhum campo de anexo configurado.${can('configure') ? ' Crie um campo do tipo “Anexo” em Chamados → Customizar chamados.' : ''}</p>`)}
+      ${bloco('Prazo e SLA', '', `<div id="sla-info">${slaInfoHtml('Normal')}</div>
+        <div style="margin-top:16px"><label class="inline"><input type="checkbox" name="visit" data-change="toggleVisit"> Gerar visita técnica na agenda ao abrir o chamado</label>
+        <div id="visit-box" style="display:none;margin-top:12px">${agendaFieldsHtml('a_')}</div></div>`)}
+      <div class="form-actions"><a class="btn" href="#/chamados">Cancelar</a><button class="btn primary" type="submit">${ic('check')} Abrir chamado</button></div>
+    </form>`;
+}
+/* Campos dinâmicos (relatórios e chamado). prefix: 'f_' nos relatórios, 't_' no chamado. */
+function fieldsHtml(fields, prefix = 'f_', optional = false) {
+  return fields.map(f => {
+    const name = prefix + f.id;
+    const req = f.required ? 'required' : '';
+    const label = `<span>${h(f.label)}${f.required ? ' <span style="color:var(--danger)" title="Obrigatório">★</span>' : ''}</span>`;
+    let input;
+    if (f.kind === 'textarea') input = `<textarea name="${name}" ${req}></textarea>`;
+    else if (f.kind === 'number') input = `<input type="number" step="any" min="0" name="${name}" ${req}>`;
+    else if (f.kind === 'date') input = `<input type="date" name="${name}" ${req}>`;
+    else if (f.kind === 'select') input = selectFieldHtml(f, name, req);
+    else if (f.kind === 'attachment') input = `<span class="upload"><input type="file" accept="image/*,application/pdf" data-change="upload"><input type="hidden" name="${name}"><span class="muted" data-status></span></span>`;
+    else input = `<input name="${name}" maxlength="255" ${req}>`;
+    const row = `<label>${label}${input}</label>`;
+    // Campos opcionais ficam ocultos até serem adicionados pelo "+ Mais".
+    return optional && !f.required ? `<div data-opt="${h(f.id)}" style="display:none">${row}</div>` : row;
+  }).join('');
+}
+/* Campos do relatório: obrigatórios à vista; opcionais e itens extras entram pelo "+ Mais". */
+function reportFieldsHtml(tplId) {
+  const fields = TEMPLATES[tplId].fields;
+  const optional = fields.filter(f => !f.required);
+  return `${fieldsHtml(fields, 'f_', true)}
+    <div class="stack" data-mais>
+      <label>+ Mais<select data-change="maisAdd"><option value="">Adicionar campo ou item</option>${optional.map(f => `<option value="opt:${h(f.id)}">${h(f.label)}</option>`).join('')}<option value="text">Item com texto livre</option><option value="file">Item com anexo (imagem ou PDF)</option></select></label>
+      <div data-extras class="stack"></div>
+    </div>`;
+}
+function extraRowHtml(kind) {
+  const n = ++extraSeq;
+  const valor = kind === 'attachment'
+    ? `<span class="upload"><input type="file" accept="image/*,application/pdf" data-change="upload"><input type="hidden" name="xv_${n}"><span class="muted" data-status></span></span>`
+    : `<textarea name="xv_${n}" maxlength="4000"></textarea>`;
+  return `<div class="extra-row stack" data-kind="${kind}" style="border:1px solid var(--border);border-radius:10px;padding:12px">
+    <label>Nome do item<input name="xl_${n}" maxlength="80" placeholder="Ex.: Peça trocada"></label>
+    <label>${kind === 'attachment' ? 'Anexo' : 'Texto'}${valor}</label>
+    <div class="actions"><button type="button" class="btn sm" data-act="rmExtra">Remover item</button></div>
+  </div>`;
+}
+function selectFieldHtml(f, name, req) {
+  const free = f.options.free;
+  const opts = f.options.list.map(o => `<option value="${h(o)}">${h(o)}</option>`).join('');
+  return `<select name="${name}" ${req} ${free ? 'data-change="selectFree"' : ''}><option value="">Selecione</option>${opts}${free ? '<option value="__free__">Outra (texto livre)</option>' : ''}</select>`
+    + (free ? `<input name="${name}__free" maxlength="255" placeholder="Digite a resposta" data-free-box style="display:none;margin-top:6px">` : '');
+}
+/* Lê os valores de um formulário com campos dinâmicos. */
+function collectFields(f, fields, prefix) {
+  const out = {};
+  for (const fd of fields) {
+    const el = f.elements[prefix + fd.id];
+    let v = el ? el.value : '';
+    if (fd.kind === 'select' && v === '__free__') {
+      const free = f.elements[prefix + fd.id + '__free'];
+      v = free ? free.value : '';
+    }
+    out[fd.id] = v;
+  }
+  return out;
+}
+/* Envia o arquivo assim que é escolhido; o formulário recebe só o id do anexo. */
+/* Anexa o arquivo de um documento de colaborador: envia o anexo e liga ao documento. */
+async function docUpload(input) {
+  const file = input.files[0];
+  if (!file) return;
+  if (file.size > MAX_UPLOAD) { input.value = ''; toast('Arquivo acima de 5 MB.', true); return; }
+  input.disabled = true;
+  try {
+    const res = await fetch('/api/attachments', {method: 'POST', credentials: 'same-origin',
+      headers: {'content-type': file.type || 'application/octet-stream', 'x-filename': encodeURIComponent(file.name)}, body: file});
+    const out = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(out.error || 'Não foi possível enviar o arquivo.');
+    await api('PATCH', `/api/employee-items/doc/${input.dataset.id}`, {attachmentId: out.id});
+    await refresh(); render(); toast('Documento anexado.');
+  } catch (e) {
+    input.value = ''; toast(e.message, true);
+  } finally { input.disabled = false; }
+}
+async function uploadFile(input) {
+  const hidden = input.parentElement.querySelector('input[type=hidden]');
+  const status = input.parentElement.querySelector('[data-status]');
+  const file = input.files[0];
+  hidden.value = '';
+  if (!file) { status.textContent = ''; return; }
+  if (file.size > MAX_UPLOAD) { input.value = ''; status.textContent = ''; toast('Arquivo acima de 5 MB.', true); return; }
+  status.textContent = 'Enviando…';
+  try {
+    const res = await fetch('/api/attachments', {method: 'POST', credentials: 'same-origin',
+      headers: {'content-type': file.type || 'application/octet-stream', 'x-filename': encodeURIComponent(file.name)}, body: file});
+    const out = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(out.error || 'Não foi possível enviar o arquivo.');
+    hidden.value = out.id;
+    status.textContent = `✓ ${out.name}`;
+  } catch (err) { input.value = ''; status.textContent = ''; toast(err.message, true); }
+}
+function attachHtml(id) {
+  const a = S.attachments.find(x => x.id === id);
+  if (!a) return '<span class="muted">Anexo indisponível</span>';
+  const url = `/api/attachments/${a.id}`;
+  const thumb = a.mime.startsWith('image/') ? `<a href="${url}" target="_blank" rel="noopener"><img class="thumb" src="${url}" alt="${h(a.name)}"></a>` : '';
+  return `${thumb}<a href="${url}" target="_blank" rel="noopener">${h(a.name)}</a> <span class="muted">(${Math.max(1, Math.round(a.size / 1024))} KB)</span>`;
+}
+/* Valor de um campo para exibição (já escapado). */
+function valueHtml(f, v) {
+  if (!v) return '—';
+  return f.kind === 'attachment' ? attachHtml(v) : h(v);
+}
+function clientCardHtml(c) {
+  if (!c) return '';
+  return `<div class="dl" style="margin:0 0 12px"><div><dt>Contato</dt><dd>${h(c.name)}</dd></div><div><dt>Email</dt><dd>${h(c.email || '—')}</dd></div><div><dt>Telefone</dt><dd>${h(c.phone || '—')}</dd></div><div><dt>CNPJ/CPF</dt><dd>${h(c.doc || '—')}</dd></div><div><dt>Endereço</dt><dd>${h(c.address || '—')}</dd></div></div>`;
+}
+/* Dados do chamado: cliente, solicitação, setor e campos personalizados. */
+function ticketInfoBody(t) {
+  const c = S.clients.find(x => x.company === t.client) || {};
+  const sector = S.sectors.find(s => s.id === t.sectorId);
+  const first = t.messages.find(m => !m.system && !m.internal);
+  const custom = t.custom || {};
+  return `<div class="dl">
+      <div><dt>Empresa</dt><dd>${h(t.client)}</dd></div>
+      <div><dt>Contato</dt><dd>${h(c.name || '—')}</dd></div>
+      <div><dt>Email</dt><dd>${h(c.email || '—')}</dd></div>
+      <div><dt>Telefone</dt><dd>${h(c.phone || '—')}</dd></div>
+      <div><dt>CNPJ/CPF</dt><dd>${h(c.doc || '—')}</dd></div>
+      <div><dt>Endereço</dt><dd>${h(c.address || '—')}</dd></div>
+      <div><dt>Tipo de chamado</dt><dd>${h(t.category)}</dd></div>
+      <div><dt>Setor</dt><dd>${h(sector ? sector.name : '—')}</dd></div>
+      ${S.ticketFields.map(f => `<div><dt>${h(f.label)}</dt><dd>${valueHtml(f, custom[f.id])}</dd></div>`).join('')}
+    </div>
+    ${first ? `<h3>Solicitação do cliente</h3><div class="msg">${h(first.body)}</div>` : ''}`;
+}
+/* Botão que abre o WhatsApp com o texto pronto avisando que o chamado foi aberto. */
+function whatsappHtml(t) {
+  const c = S.clients.find(x => x.company === t.client) || {};
+  const digits = String(c.phone || '').replace(/\D/g, '');
+  if (!digits) return '<p class="muted" style="margin-top:12px">Cadastre o telefone do cliente para enviar aviso pelo WhatsApp.</p>';
+  const num = digits.length === 10 || digits.length === 11 ? '55' + digits : digits;
+  const visita = S.agenda.find(a => a.ticketId === t.id);
+  const extra = visita ? ` Visita agendada para ${fmtDate(visita.date)} às ${visita.time}. Adicione ao seu calendário: ${googleAgendaUrl(visita, t)}` : '';
+  const msg = `Olá, ${c.name || ''}! Seu chamado #${t.id} (“${t.title}”) foi aberto com sucesso. Em breve nossa equipe dará continuidade.${extra} ATENDA`;
+  return `<div class="actions" style="margin-top:12px"><a class="btn" target="_blank" rel="noopener" href="${h(`https://wa.me/${num}?text=${encodeURIComponent(msg)}`)}">Enviar aviso pelo WhatsApp</a></div>`;
+}
+/* Contexto completo para validar o relatório: chamado, agenda e últimas mensagens. */
+function contextoHtml(r) {
+  const t = S.tickets.find(x => x.id === r.ticketId);
+  if (!t) return '';
+  const visits = S.agenda.filter(a => a.ticketId === t.id);
+  const msgs = t.messages.filter(m => !m.internal).slice(-6);
+  return `<h3>Contexto do chamado</h3>${ticketInfoBody(t)}
+    <div class="two" style="margin-top:12px"><div><h3>Agenda</h3>${visits.length ? visits.map(a => `<div class="msg"><strong>${fmtDate(a.date)} · ${h(a.time)}</strong> ${h(a.taskType)}<div class="muted">${h(a.technician)} · ${h(a.status)}</div></div>`).join('') : '<div class="muted">Sem visitas agendadas.</div>'}</div>
+    <div><h3>Últimas mensagens</h3>${msgs.map(m => `<div class="msg ${m.system ? 'sys' : ''}"><strong>${h(m.author)}</strong> <small>${h(m.time)}</small><div>${h(m.body)}</div></div>`).join('') || '<div class="muted">Sem mensagens.</div>'}</div></div>`;
+}
+/* Formulário de criação de campo (relatório ou chamado), com opções em lista. */
+const optRowHtml = (v = '') => `<div class="opt-row"><input name="opt" maxlength="80" placeholder="Opção" value="${h(v)}"><button type="button" class="btn sm" data-act="rmOpt">Remover</button></div>`;
+function fieldAdderHtml(scope) {
+  const tpl = scope === 'report' ? `<label>Relatório<select name="template">${Object.entries(TEMPLATES).map(([tid, t]) => `<option value="${tid}">${h(t.name)}</option>`).join('')}</select></label>` : '';
+  return `<form class="stack" data-form="addField" data-scope="${scope}">
+    <div class="grid2">${tpl}
+      <label>Nome do campo<input name="label" required minlength="2" maxlength="80"></label>
+      <label>Categoria do campo<select name="kind" data-change="kindChange">${Object.entries(FIELD_KINDS).map(([k, l]) => `<option value="${k}">${l}</option>`).join('')}</select></label>
+      <label class="inline"><input type="checkbox" name="required"> Obrigatório</label>
+    </div>
+    <div data-opts-box class="stack" style="display:none">
+      <strong style="font-size:14px">O que será incluso na lista</strong>
+      <div data-opts class="stack">${optRowHtml()}${optRowHtml()}</div>
+      <div class="actions"><button type="button" class="btn sm" data-act="addOpt">+ Adicionar opção</button>
+        <label class="inline"><input type="checkbox" name="free"> Permitir texto livre (opção "Outra")</label></div>
+    </div>
+    <div class="actions"><button class="btn primary" type="submit">Adicionar campo</button></div>
+  </form>`;
+}
+function fieldRowsHtml(fields, scope, tid, c) {
+  if (!fields.length) return '<tr><td class="muted">Nenhum campo.</td></tr>';
+  return fields.map(f => {
+    const opts = f.kind === 'select' ? `<div>${h(f.options.list.join(' · ') || 'sem opções')}${f.options.free ? ' · texto livre' : ''}</div>` : '';
+    const edit = c && f.kind === 'select' ? `<button class="btn sm" data-act="editOpts" data-scope="${scope}" data-template="${h(tid)}" data-id="${h(f.id)}">Opções</button> ` : '';
+    const del = c && !(scope === 'report' && f.id === 'value') ? `<button class="btn sm" data-act="delField" data-scope="${scope}" data-template="${h(tid)}" data-id="${h(f.id)}">Excluir</button>` : '';
+    return `<tr><td>${h(f.label)}${f.required ? ' ★' : ''}</td><td class="muted">${h(FIELD_KINDS[f.kind] || f.kind)}${opts}</td><td style="text-align:right;white-space:nowrap">${edit}${del}</td></tr>`;
+  }).join('');
+}
+function detalheView(id) {
+  const t = [...S.tickets, ...S.archivedTickets].find(x => x.id === Number(id));
+  if (!t) return `<div class="card empty">Chamado não encontrado. <a href="#/chamados">Voltar aos chamados</a></div>`;
+  const reps = S.reports.filter(r => r.ticketId === t.id);
+  const canClose = !t.archived && t.status !== 'Resolvido' && can('report') && !reps.some(r => r.status !== 'returned');
+  const sector = S.sectors.find(s => s.id === t.sectorId);
+  const pol = S.sla[t.priority] || {resp: 0, res: 0};
+  const thread = t.messages.map(m => m.system
+    ? `<div class="ev-sys"><span>${h(m.body)}</span><small>${h(m.time)}</small></div>`
+    : `<div class="tm ${m.internal ? 'int' : ''}"><span class="avatar sm ${m.author === t.client || !S.users.some(u => u.name === m.author) ? 'alt' : ''}">${h(initials(m.author))}</span><div class="bubble"><div class="bh"><b>${h(m.author)}</b><small>${h(m.time)}</small>${m.internal ? '<span class="tag">Nota interna</span>' : ''}</div><div class="bb">${h(m.body)}</div></div></div>`).join('');
+  const editavel = can('receive') && !t.archived && t.status !== 'Resolvido';
+  return `<p class="crumb no-print"><a href="#/chamados">Chamados</a> / #${t.id}</p>
+    <div class="ticket-hero">
+      <div style="min-width:0;flex:1">
+        <span class="idchip">Chamado #${t.id}</span>
+        <h1>${h(t.title)}</h1>
+        <p class="sub">${h(t.client)} · ${h(t.category)} · aberto em ${h(t.created)}</p>
+        <div class="meta">${statusBadge(t.status)}${badgePrio(t.priority)}<span class="badge dot ${SLA_CLASS[t.sla]}">SLA ${SLA_LABEL[t.sla].toLowerCase()} · ${h(t.due)}</span></div>
+      </div>
+      ${can('configure') ? `<div class="actions no-print"><button class="btn" data-act="archiveTicket" data-id="${t.id}" data-v="${t.archived ? '0' : '1'}">${ic('archive')} ${t.archived ? 'Restaurar chamado' : 'Arquivar chamado'}</button></div>` : ''}
+    </div>
+    ${t.archived ? '<div class="notice">Este chamado está arquivado. Restaure-o para continuar o atendimento.</div>' : ''}
+    <div class="desk">
+      <div class="col-stack">
+        <div class="card"><div class="card-head"><h2>Conversa e histórico</h2><span class="muted">${t.messages.length} registro(s)</span></div>
+          <div class="thread">${thread || '<div class="empty">Sem mensagens.</div>'}</div>
+          ${editavel ? `<form class="composer no-print" data-form="reply" data-id="${t.id}">
+            <textarea name="body" required maxlength="4000" placeholder="Escreva uma resposta ao cliente ou uma nota para a equipe" aria-label="Mensagem"></textarea>
+            <div class="actions"><label class="inline"><input type="checkbox" name="internal"> Nota interna (só a equipe vê)</label><button class="btn primary" type="submit">${ic('send')} Enviar</button></div>
+          </form>` : ''}
+        </div>
+        <div class="card">
+          <h2>Relatórios de encerramento</h2>
+          ${reps.length ? reps.map(r => `<div class="msg"><strong>${h(r.templateName)}</strong> · ${h(r.serviceCode)} ${h(r.serviceName)}<div style="margin-top:4px">${reportBadge(r.status)} <small>por ${h(r.authorName)}</small></div></div>`).join('') : '<div class="muted">Nenhum relatório enviado.</div>'}
+          ${canClose ? `<h3>Encerrar com relatório</h3>
+            <form class="stack" data-form="report" data-id="${t.id}">
+              <div class="grid2">
+                <label>Tipo de relatório<select name="tpl" data-change="tplChange">${Object.entries(TEMPLATES).map(([k, v]) => `<option value="${k}">${h(v.name)}</option>`).join('')}</select></label>
+                <label>Tipo de serviço<select name="svc" required><option value="">Selecione</option>${S.services.filter(s => s.active).map(s => `<option value="${h(s.id)}">${h(s.code)} · ${h(s.name)}</option>`).join('')}</select></label>
+              </div>
+              <div id="repFields" class="stack">${reportFieldsHtml('service')}</div>
+              <div class="actions"><button class="btn primary" type="submit">Enviar para validação</button></div>
+            </form>` : (t.status === 'Resolvido' ? '<div class="muted" style="margin-top:8px">Chamado resolvido.</div>' : (can('report') ? '' : '<div class="muted" style="margin-top:8px">Seu perfil não envia relatórios.</div>'))}
+        </div>
+        ${agendaTicketHtml(t)}
+      </div>
+      <div class="col-stack">
+        <div class="card"><h2>Detalhes</h2><div class="props">
+          <div class="pr"><span>Status</span><select data-change="setStatus" data-id="${t.id}" aria-label="Status" ${can('receive') ? '' : 'disabled'}>${selectOpts(STATUSES, t.status)}</select></div>
+          <div class="pr"><span>Responsável</span><select data-change="setAgent" data-id="${t.id}" aria-label="Responsável" ${can('receive') ? '' : 'disabled'}>${selectOpts(agents(), t.agent, 'Não atribuído')}</select></div>
+          <div class="pr"><span>Prioridade</span><div>${badgePrio(t.priority)}</div></div>
+          <div class="pr"><span>Equipe</span><div>${h(t.team)}</div></div>
+          <div class="pr"><span>Setor</span><div>${h(sector ? sector.name : '—')}</div></div>
+          <div class="pr"><span>Aberto em</span><div>${h(t.created)}</div></div>
+          <div class="pr"><span>Atualizado</span><div>${h(t.updated)}</div></div>
+        </div></div>
+        <div class="card"><h2>SLA</h2><div class="props">
+          <div class="pr"><span>Situação</span><div>${badgeSla(t.sla, t.due)}</div></div>
+          <div class="pr"><span>1ª resposta</span><div>até ${fmtMin(pol.resp)}</div></div>
+          <div class="pr"><span>Resolução</span><div>até ${pol.res} h</div></div>
+          <div class="pr"><span>Aberto em</span><div>${h(t.created)}</div></div>
+        </div><p class="muted" style="margin:10px 0 0">Prazos da política para a prioridade ${h(t.priority)}. As mudanças de status ficam no histórico da conversa.</p></div>
+        <div class="card"><h2>Informações do chamado</h2>${ticketInfoBody(t)}${whatsappHtml(t)}</div>
+      </div>
+    </div>`;
+}
+const AGENDA_TYPES = ['Manutenção Preventiva', 'Manutenção Corretiva', 'Instalação', 'Visita técnica'];
+const AGENDA_STATUS = ['Aberta', 'Em andamento', 'Concluída', 'Cancelada'];
+const FIELD_KINDS = {text: 'Texto', textarea: 'Texto longo', date: 'Data', number: 'Número', select: 'Lista de opções', attachment: 'Anexo (imagem ou PDF)'};
+const MAX_UPLOAD = 5 * 1024 * 1024;
+const MAX_EXTRAS = 5;
+let extraSeq = 0;
+const AG_STATUS_CLASS = {'Aberta': 'ev-open', 'Em andamento': 'ev-prog', 'Concluída': 'ev-done', 'Cancelada': 'ev-cancel'};
+const MESES = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+function todayIso() { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; }
+function fmtDate(iso) { return iso.split('-').reverse().join('/'); }
+function agendaFieldsHtml(p) {
+  return `<div class="grid2">
+    <label>Tipo de tarefa<select name="${p}type">${selectOpts(AGENDA_TYPES, AGENDA_TYPES[0])}</select></label>
+    <label>Data<input type="date" name="${p}date" value="${todayIso()}"></label>
+    <label>Hora<input type="time" name="${p}time" value="09:00"></label>
+    <label>Técnico<select name="${p}technician">${selectOpts(agents(), S.me.name, 'Selecione')}</select></label>
+    <label style="grid-column:1/-1">Endereço (em branco usa o endereço do cliente)<input name="${p}address" maxlength="255" placeholder="Rua, número, bairro, cidade"></label>
+  </div>`;
+}
+function agendaPayload(f, p) {
+  return {taskType: f.elements[p + 'type'].value, date: f.elements[p + 'date'].value, time: f.elements[p + 'time'].value,
+    technician: f.elements[p + 'technician'].value, address: f.elements[p + 'address'].value};
+}
+/* Link que abre o Google Agenda já preenchido com a visita (duração de 1 hora, horário de São Paulo). */
+function googleAgendaUrl(a, t) {
+  const [y, mo, d] = a.date.split('-').map(Number);
+  const [hh, mi] = a.time.split(':').map(Number);
+  const fmt = dt => dt.toISOString().slice(0, 16).replace(/[-:]/g, '') + '00';
+  const params = new URLSearchParams({
+    action: 'TEMPLATE',
+    text: `${a.taskType} · Chamado #${t.id}`,
+    dates: `${fmt(new Date(Date.UTC(y, mo - 1, d, hh, mi)))}/${fmt(new Date(Date.UTC(y, mo - 1, d, hh + 1, mi)))}`,
+    details: `${t.title} — ${t.client}`,
+    location: a.address || '',
+    ctz: 'America/Sao_Paulo'
+  });
+  return 'https://calendar.google.com/calendar/render?' + params.toString();
+}
+function agendaTicketHtml(t) {
+  const items = S.agenda.filter(a => a.ticketId === t.id);
+  return `<div class="card"><h2>Agenda deste chamado</h2>
+    ${items.length ? items.map(a => `<div class="cardk" style="display:flex;gap:10px;justify-content:space-between;flex-wrap:wrap;align-items:center">
+      <div><strong>${fmtDate(a.date)} · ${h(a.time)} · ${h(a.taskType)}</strong><div class="muted">${h(a.technician)} · ${h(a.address || 'Sem endereço')}</div>
+        <a class="btn sm" style="margin-top:6px" target="_blank" rel="noopener" href="${h(googleAgendaUrl(a, t))}">Adicionar ao Google Agenda</a></div>
+      <select data-change="agendaStatus" data-id="${h(a.id)}" aria-label="Status do agendamento" ${can('receive') ? '' : 'disabled'}>${selectOpts(AGENDA_STATUS, a.status)}</select></div>`).join('') : '<div class="muted">Nenhuma visita agendada.</div>'}
+    ${can('receive') && !t.archived && t.status !== 'Resolvido' ? `<h3>Agendar visita</h3><form class="stack" data-form="agenda" data-id="${t.id}">${agendaFieldsHtml('a_')}<div class="actions"><button class="btn primary" type="submit">Agendar</button></div></form>` : ''}
+  </div>`;
+}
+function agendaView() {
+  if (!AG.ym) AG.ym = todayIso().slice(0, 7);
+  const [y, m] = AG.ym.split('-').map(Number);
+  const items = S.agenda.filter(a => !AG.tec || a.technician === AG.tec);
+  const head = pageHead('Agenda', 'Visitas e tarefas de campo geradas pelos chamados.', `<div class="actions">
+    <button class="btn ${AG.mode === 'mes' ? 'primary' : ''}" data-act="agMode" data-v="mes">Mês</button>
+    <button class="btn ${AG.mode === 'lista' ? 'primary' : ''}" data-act="agMode" data-v="lista">Lista</button></div>`);
+  const bar = `<div class="card"><div class="grid2" style="align-items:end">
+    <label>Técnico<select data-change="agTec">${selectOpts(agents(), AG.tec, 'Todos os técnicos')}</select></label>
+    <div class="actions"><button class="btn" data-act="agNav" data-v="-1">‹ Anterior</button>
+      <strong style="min-width:160px;text-align:center">${MESES[m - 1]} de ${y}</strong>
+      <button class="btn" data-act="agNav" data-v="1">Próximo ›</button>
+      <button class="btn" data-act="agNav" data-v="0">Hoje</button></div></div></div>`;
+  const legend = `<div class="actions" style="margin:-4px 0 12px">${Object.keys(AG_STATUS_CLASS).map(s => `<span class="ev ${AG_STATUS_CLASS[s]}" style="display:inline-block">${s}</span>`).join('')}</div>`;
+  if (AG.mode === 'lista') {
+    const monthItems = items.filter(a => a.date.startsWith(AG.ym)).sort((a, b) => (a.date + a.time).localeCompare(b.date + b.time));
+    return head + bar + legend + `<div class="card">${monthItems.length ? `<div class="table-scroll"><table><thead><tr><th>Data</th><th>Hora</th><th>Cliente</th><th>Chamado</th><th>Tipo de tarefa</th><th>Técnico</th><th>Endereço</th><th>Status</th></tr></thead><tbody>
+      ${monthItems.map(a => `<tr class="link" data-go="#/chamados/${a.ticketId}"><td>${fmtDate(a.date)}</td><td>${h(a.time)}</td><td>${h(a.client)}</td><td>#${a.ticketId}</td><td>${h(a.taskType)}</td><td>${h(a.technician)}</td><td>${h(a.address)}</td><td><span class="ev ${AG_STATUS_CLASS[a.status]}">${h(a.status)}</span></td></tr>`).join('')}
+      </tbody></table></div>` : '<div class="empty">Nenhuma visita neste mês.</div>'}</div>`;
+  }
+  const byDay = {};
+  items.forEach(a => { (byDay[a.date] ||= []).push(a); });
+  const lead = new Date(y, m - 1, 1).getDay(), days = new Date(y, m, 0).getDate();
+  const cells = [];
+  for (let i = 0; i < lead; i++) cells.push('<div class="day off"></div>');
+  for (let d = 1; d <= days; d++) {
+    const iso = `${AG.ym}-${String(d).padStart(2, '0')}`;
+    const list = (byDay[iso] || []).sort((a, b) => a.time.localeCompare(b.time));
+    cells.push(`<div class="day ${iso === todayIso() ? 'today' : ''}"><div class="dnum">${d}</div>${list.map(a => `<a class="ev ${AG_STATUS_CLASS[a.status]}" href="#/chamados/${a.ticketId}" title="${h(a.taskType)} · ${h(a.client)} · ${h(a.technician)}"><strong>${h(a.time)}</strong> ${h(a.client)}</a>`).join('')}</div>`);
+  }
+  return head + bar + legend + `<div class="cal-wrap"><div class="cal">${['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'].map(w => `<div class="wd">${w}</div>`).join('')}${cells.join('')}</div></div>`;
+}
+
+function kanbanView() {
+  return pageHead('Kanban', 'Mova os chamados entre as etapas do atendimento.') +
+    `<div class="kanban">${STATUSES.map(st => {
+      const list = S.tickets.filter(t => t.status === st);
+      return `<section class="kcol" style="--kc:${STATUS_COLOR[st] || 'var(--primary)'}"><h3><span>${h(st)}</span><span class="badge">${list.length}</span></h3>${list.map(t => `<div class="cardk">
+        <div class="actions" style="justify-content:space-between;flex-wrap:nowrap;margin-bottom:6px"><a class="kid" href="#/chamados/${t.id}">#${t.id}</a>${badgePrio(t.priority)}</div>
+        <a href="#/chamados/${t.id}"><strong>${h(t.title)}</strong></a>
+        <div class="muted" style="margin-top:2px">${h(t.client)} · ${h(t.category)}</div>
+        <div class="actions" style="margin-top:8px;gap:6px"><span class="badge dot ${SLA_CLASS[t.sla]}">${SLA_LABEL[t.sla]}</span><span class="muted">${h(t.agent)}</span></div>
+        <select data-change="moveTicket" data-id="${t.id}" aria-label="Mover chamado ${t.id}" ${can('receive') ? '' : 'disabled'}>${selectOpts(STATUSES, t.status)}</select>${can('configure') ? `<button class="btn sm ghost" data-act="archiveTicket" data-id="${t.id}" data-v="1" style="margin-top:6px">${ic('archive')} Arquivar</button>` : ''}</div>`).join('') || '<div class="empty" style="padding:16px 8px">Nenhum chamado</div>'}</section>`;
+    }).join('')}</div>`;
+}
+function clientIssues(r) {
+  const issues = r.fields.filter(f => f.required && !String(r.values[f.id] || '').trim()).map(f => `Campo obrigatório vazio: ${f.label}.`);
+  if (!(Number(r.values.value) > 0)) issues.push('O relatório precisa de um "Valor (R$)" maior que zero.');
+  if (!fiscalOk()) issues.push('Dados fiscais incompletos ou CNPJ inválido (Configurações → Dados fiscais).');
+  if (!r.serviceName) issues.push('Tipo de serviço não informado.');
+  return issues;
+}
+function canReview(r) { return r.status === 'pending' && r.authorId !== S.me.id && can('review'); }
+function relatoriosView() {
+  const abas = [['validacao', 'Validação'], ['tipo', 'Por tipo de chamado']];
+  if (can('configure')) abas.push(['customizar', 'Customizar relatórios']);
+  const atual = abas.some(([k]) => k === repTab) ? repTab : 'validacao';
+  const tabs = `<div class="tabs no-print">${abas.map(([k, l]) => `<button class="tab ${atual === k ? 'on' : ''}" data-act="repTab" data-v="${k}">${l}</button>`).join('')}</div>`;
+  const desc = {validacao: 'Revise os encerramentos antes de concluir o atendimento.', tipo: 'Relatórios e indicadores agrupados pelo tipo de chamado.', customizar: 'Campos e itens de cada tipo de relatório, como no Auvo.'};
+  const corpo = atual === 'customizar' ? customizarRelatoriosHtml() : (atual === 'validacao' ? validacaoView() : tipoView());
+  return pageHead('Relatórios', desc[atual]) + tabs + corpo;
+}
+function validacaoView() {
+  const rows = S.reports.filter(r => !RF || r.status === RF);
+  const sel = selRep ? S.reports.find(r => r.id === selRep) : null;
+  return `<div class="card">
+    <label style="max-width:260px;margin-bottom:12px">Status<select data-change="filterRep"><option value="">Todos</option><option value="pending" ${RF === 'pending' ? 'selected' : ''}>Aguardando validação</option><option value="approved" ${RF === 'approved' ? 'selected' : ''}>Validado</option><option value="returned" ${RF === 'returned' ? 'selected' : ''}>Devolvido</option></select></label>
+    ${rows.length ? `<div class="table-scroll"><table><thead><tr><th>Chamado</th><th>Tipo de relatório</th><th>Tipo de chamado</th><th>Autor</th><th>Enviado em</th><th>Status</th><th>Validador</th><th></th></tr></thead><tbody>
+      ${rows.map(r => `<tr><td>#${r.ticketId}</td><td>${h(r.templateName)}</td><td>${h(r.ticketCategory)}</td><td>${h(r.authorName)}</td><td>${h(new Date(r.submittedAt).toLocaleString('pt-BR'))}</td><td>${reportBadge(r.status)}</td><td>${h(r.reviewerName || '—')}</td><td><button class="btn sm" data-act="pickReport" data-id="${r.id}">Revisar</button></td></tr>`).join('')}
+    </tbody></table></div>` : '<div class="empty">Nenhum relatório neste momento. Os relatórios enviados no encerramento dos chamados aparecem aqui.</div>'}
+  </div>
+  ${sel ? reviewPanel(sel) : ''}`;
+}
+function reviewPanel(r) {
+  const issues = r.status === 'pending' ? clientIssues(r) : [];
+  const ok = canReview(r);
+  return `<div class="card" id="review">
+    <div class="actions" style="justify-content:space-between"><h2>Relatório do chamado #${r.ticketId}</h2><button class="btn sm" data-act="closeReview">Fechar</button></div>
+    <p class="muted">${h(r.authorName)} · ${h(r.templateName)}${r.serviceName ? ` · ${h(r.serviceCode)} ${h(r.serviceName)}` : ''} · tipo de chamado: ${h(r.ticketCategory)}</p>
+    ${r.status === 'pending' ? (issues.length ? `<div class="issues"><strong>Pendências para gerar NF-e:</strong><ul>${issues.map(i => `<li>${h(i)}</li>`).join('')}</ul></div>` : '<div class="notice">Pronto para gerar NF-e demonstrativa.</div>') : ''}
+    <dl class="dl">${r.fields.map(f => `<div><dt>${h(f.label)}</dt><dd>${valueHtml(f, r.values[f.id])}</dd></div>`).join('')}</dl>
+    ${contextoHtml(r)}
+    ${r.feedback ? `<div class="notice">${h(r.feedback)}</div>` : ''}
+    ${r.status !== 'pending' ? '' : ok ? `<form class="stack" data-form="review" data-id="${r.id}">
+        <label>Observação da revisão<textarea name="feedback" maxlength="2000"></textarea></label>
+        <div class="actions"><button class="btn" name="decision" value="return" type="submit">Devolver</button><button class="btn primary" name="decision" value="approve" type="submit">Validar relatório</button></div>
+      </form>` : `<div class="notice">${r.authorId === S.me.id ? 'O autor não pode validar o próprio relatório.' : 'Seu perfil não possui permissão de validação.'} A revisão deve ser feita por outro usuário ativo, com perfil de validador.</div>`}
+  </div>`;
+}
+function tipoView() {
+  const cats = [...new Set(S.tickets.map(t => t.category))].sort((a, b) => a.localeCompare(b, 'pt-BR'));
+  const rows = cats.map(cat => {
+    const list = S.tickets.filter(t => t.category === cat);
+    const s = summarizeTickets(list);
+    const reps = S.reports.filter(r => r.ticketCategory === cat);
+    return `<tr class="link" data-act="genType" data-v="${h(cat)}"><td><strong>${h(cat)}</strong></td><td>${s.total}</td><td>${s.open}</td><td>${s.resolved}</td><td class="${s.late ? 'pill-late' : ''}">${s.late}</td><td>${reps.length}</td><td>${reps.filter(r => r.status === 'approved').length}</td></tr>`;
+  }).join('');
+  return `<div class="card">
+    <h2>Visão geral por tipo de chamado</h2>
+    <div class="table-scroll"><table><thead><tr><th>Tipo de chamado</th><th>Total</th><th>Abertos</th><th>Resolvidos</th><th>SLA vencido</th><th>Relatórios</th><th>Validados</th></tr></thead><tbody>${rows}</tbody></table></div>
+    <p class="muted">Clique numa linha para gerar o relatório daquele tipo.</p>
+  </div>
+  <div class="card">
+    <h2>Criar relatório</h2>
+    <form class="grid2" data-form="gen">
+      <label>Tipo de chamado<select name="type"><option value="">Todos os tipos</option>${selectOpts(cats, G.type)}</select></label>
+      <label>Status do chamado<select name="status"><option value="">Todos</option>${selectOpts(STATUSES, G.status)}</select></label>
+      <label>Formato<select name="fmt"><option value="resumo" ${G.fmt === 'resumo' ? 'selected' : ''}>Resumo</option><option value="detalhado" ${G.fmt === 'detalhado' ? 'selected' : ''}>Detalhado (com lista)</option></select></label>
+      <button class="btn primary" type="submit">Gerar relatório</button>
+    </form>
+    ${G.show ? genReportHtml() : ''}
+  </div>`;
+}
+function genReportHtml() {
+  const list = S.tickets.filter(t => (!G.type || t.category === G.type) && (!G.status || t.status === G.status)).sort((a, b) => a.id - b.id);
+  const s = summarizeTickets(list);
+  const ids = new Set(list.map(t => t.id));
+  const reps = S.reports.filter(r => ids.has(r.ticketId));
+  return `<div class="actions" style="justify-content:space-between;margin:14px 0 8px"><h3 style="margin:0">Relatório — ${h(G.type || 'Todos os tipos')}</h3><span class="muted">Dados de ${h(new Date().toLocaleString('pt-BR'))}${G.status ? ' · status: ' + h(G.status) : ''}</span></div>
+    <div class="grid" style="margin-bottom:14px">
+      <div class="kpi"><strong>${s.total}</strong><span>Chamados</span></div>
+      <div class="kpi"><strong>${s.open}</strong><span>Em aberto</span></div>
+      <div class="kpi"><strong>${s.resolved}</strong><span>Resolvidos</span></div>
+      <div class="kpi"><strong>${s.urgent}</strong><span>Urgentes ou altos</span></div>
+      <div class="kpi"><strong class="pill-ok">${pct(s.ok, s.total)}%</strong><span>SLA em dia</span></div>
+      <div class="kpi"><strong>${reps.filter(r => r.status === 'approved').length}/${reps.length}</strong><span>Relatórios validados</span></div>
+    </div>
+    <div class="two">
+      <div><h3>Por status</h3>${bars(countBy(list, t => t.status, STATUSES), s.total)}</div>
+      <div><h3>Por prioridade</h3>${bars(countBy(list, t => t.priority, PRIORITIES), s.total)}</div>
+      <div><h3>Por responsável</h3>${bars(countBy(list, t => t.agent), s.total)}</div>
+      <div><h3>Por equipe</h3>${bars(countBy(list, t => t.team), s.total)}</div>
+    </div>
+    ${G.fmt === 'detalhado' ? `<h3>Chamados</h3>${ticketTable(list)}` : ''}
+    <div class="actions no-print" style="margin-top:14px"><button class="btn" data-act="csvReport">Baixar CSV</button><button class="btn" data-act="printReport">Imprimir / salvar em PDF</button></div>`;
+}
+function nfeView() {
+  return pageHead('NF-e', 'Notas geradas a partir de relatórios validados. Simulação, sem validade fiscal.') + `
+    <div class="notice">Documentos demonstrativos. A emissão real depende de um serviço fiscal conectado.</div>
+    <div class="card">${S.invoices.length ? `<div class="table-scroll"><table><thead><tr><th>Nº</th><th>Chamado</th><th>Cliente</th><th>Serviço</th><th>Base</th><th>ISS</th><th>Líquido</th><th>Status</th></tr></thead><tbody>
+      ${S.invoices.map(n => `<tr><td>${n.number}</td><td>#${n.ticketId}</td><td>${h(n.client)}</td><td>${h(n.serviceCode)} ${h(n.serviceName)}</td><td>${brl(n.base)}</td><td>${brl(n.iss)} <span class="muted">(${n.issRate}%)</span></td><td>${brl(n.net)}</td><td><span class="badge">${h(n.status)}</span></td></tr>`).join('')}
+    </tbody></table></div>` : '<div class="empty">Nenhuma NF-e gerada. Valide um relatório para gerar uma.</div>'}</div>`;
+}
+function clientesView() {
+  return pageHead('Clientes', 'Cadastro e relacionamento com os clientes.', can('receive') ? `<button class="btn primary" data-act="toggleClientForm">${ic('plus')} Novo cliente</button>` : '') +
+    `<div class="card"><p class="muted" style="margin-top:0">Cada cliente tem um link próprio para abrir chamados. “Novo link” invalida o anterior.</p><div class="table-scroll"><table><thead><tr><th>Cliente</th><th>Empresa</th><th>Email</th><th>Telefone</th><th>Documento</th><th>Chamados</th><th>Status</th><th></th></tr></thead><tbody>
+    ${S.clients.map(c => `<tr><td>${h(c.name)}</td><td>${h(c.company)}</td><td>${h(c.email)}</td><td>${h(c.phone)}</td><td>${h(c.doc)}</td><td>${S.tickets.filter(t => t.client === c.company).length}</td><td><span class="badge ${c.active ? 'b-ok' : ''}">${c.active ? 'Ativo' : 'Arquivado'}</span></td><td style="white-space:nowrap">${can('receive') && c.active ? `<button class="btn sm" data-act="copyLink" data-token="${h(c.linkToken)}" data-company="${h(c.company)}">Copiar link</button> <button class="btn sm" data-act="newLink" data-id="${h(c.id)}">Novo link</button> ` : ''}${can('configure') ? `<button class="btn sm" data-act="toggleClient" data-id="${h(c.id)}" data-v="${c.active ? '0' : '1'}">${c.active ? 'Arquivar' : 'Reativar'}</button>` : ''}</td></tr>`).join('')}
+    </tbody></table></div></div>`;
+}
+function clientFormHtml() {
+  return `<form class="stack" data-form="client"><div class="grid2">
+      <label>Nome do contato<input name="name" required minlength="2" maxlength="100"></label>
+      <label>Empresa<input name="company" required minlength="2" maxlength="100"></label>
+      <label>Email<input type="email" name="email" maxlength="255"></label>
+      <label>Telefone (WhatsApp)<input name="phone" maxlength="30" placeholder="(41) 99999-0000"></label>
+      <label>CNPJ/CPF<input name="doc" maxlength="20"></label>
+      <label>Endereço<input name="address" maxlength="255" placeholder="Rua, número, bairro, cidade"></label>
+    </div><div class="actions end"><button type="button" class="btn ghost" data-act="closeModal">Cancelar</button><button class="btn primary" type="submit">Salvar cliente</button></div></form>`;
+}
+function tarefasView() {
+  const open = S.tickets.filter(t => t.status !== 'Resolvido');
+  return pageHead('Tarefas', 'Transforme solicitações em próximos passos claros.') + `
+    <div class="card">${S.tasks.length ? S.tasks.map(t => `<div class="cardk" style="display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap">
+      <div><button class="btn sm" data-act="toggleTask" data-id="${h(t.id)}" aria-pressed="${t.done}" ${can('receive') ? '' : 'disabled'}>${t.done ? '✓ Concluída' : 'Concluir'}</button></div>
+      <div style="flex:1;min-width:200px"><strong style="${t.done ? 'text-decoration:line-through;color:var(--muted)' : ''}">${h(t.title)}</strong><div class="muted">${h(t.agent)} · ${h(t.due.split('-').reverse().join('/'))} · chamado #${t.ticket}</div></div>
+      <div>${badgePrio(t.priority)} ${can('configure') ? `<button class="btn sm" data-act="archTask" data-id="${h(t.id)}" data-v="1">Arquivar</button>` : ''}</div></div>`).join('') : '<div class="empty">Nenhuma tarefa.</div>'}</div>
+    ${can('configure') && S.archivedTasks.length ? `<div class="card"><h2>Tarefas arquivadas</h2>${S.archivedTasks.map(t => `<div class="cardk" style="display:flex;gap:12px;justify-content:space-between;flex-wrap:wrap;align-items:center"><div><strong>${h(t.title)}</strong><div class="muted">${h(t.agent)} · chamado #${t.ticket}</div></div><button class="btn sm" data-act="archTask" data-id="${h(t.id)}" data-v="0">Restaurar</button></div>`).join('')}</div>` : ''}
+    ${can('receive') ? `<div class="card"><h2>Nova tarefa</h2><form class="grid2" data-form="task">
+      <label>Título<input name="title" required minlength="3" maxlength="160"></label>
+      <label>Responsável<select name="agent" required>${selectOpts(agents())}</select></label>
+      <label>Prazo<input type="date" name="due" required></label>
+      <label>Prioridade<select name="priority">${selectOpts(PRIORITIES, 'Normal')}</select></label>
+      <label>Chamado<select name="ticket" required>${open.map(t => `<option value="${t.id}">#${t.id} · ${h(t.title)}</option>`).join('')}</select></label>
+      <button class="btn primary" type="submit">Criar tarefa</button></form></div>` : ''}`;
+}
+function slaView() {
+  const s = summarizeTickets(S.tickets);
+  return pageHead('SLA', 'Prazos por prioridade. Os indicadores são calculados a partir dos chamados.') + `
+    <div class="grid" style="margin-bottom:16px">
+      <div class="kpi"><strong class="pill-ok">${pct(s.ok, s.total)}%</strong><span>SLA em dia</span></div>
+      <div class="kpi"><strong>${s.warning}</strong><span>Em risco</span></div>
+      <div class="kpi"><strong class="pill-late">${s.late}</strong><span>Vencidos</span></div>
+      <div class="kpi"><strong>${s.open}</strong><span>Chamados em aberto</span></div>
+    </div>
+    <div class="card"><h2>Políticas de atendimento</h2><p class="muted" style="margin-top:0">Os valores de resolução são exemplos deste protótipo, não do projeto original.</p>
+    <form data-form="sla"><div class="table-scroll"><table><thead><tr><th>Prioridade</th><th>Primeira resposta (min)</th><th>Resolução (horas)</th></tr></thead><tbody>
+    ${PRIORITIES.map(p => `<tr><td>${badgePrio(p)}</td><td><input type="number" min="1" name="resp_${p}" value="${S.sla[p].resp}" required style="width:140px" ${can('configure') ? '' : 'disabled'}></td><td><input type="number" min="1" name="res_${p}" value="${S.sla[p].res}" required style="width:140px" ${can('configure') ? '' : 'disabled'}></td></tr>`).join('')}
+    </tbody></table></div>${can('configure') ? '<div class="actions" style="margin-top:12px"><button class="btn primary" type="submit">Salvar políticas</button></div>' : ''}</form></div>`;
+}
+function configView() {
+  const c = can('configure'), dis = c ? '' : 'disabled';
+  const tabs = `<div class="tabs no-print">${[['geral', 'Geral'], ['usuarios', 'Usuários'], ['perfis', 'Perfis de acesso']].map(([k, l]) => `<button class="tab ${cfgTab === k ? 'on' : ''}" data-act="cfgTab" data-v="${k}">${l}</button>`).join('')}</div>`;
+  if (cfgTab === 'usuarios') return pageHead('Configurações', 'Quem usa o ATENDA e com qual perfil.') + tabs + usuariosTabHtml(c);
+  if (cfgTab === 'perfis') return pageHead('Configurações', 'Quais telas cada perfil abre e o que pode fazer.') + tabs + perfisTabHtml(c);
+  return pageHead('Configurações', 'Setores, serviços e dados fiscais do workspace.') + tabs + `
+    <div class="two">
+      <div class="card"><h2>Perfil atual</h2><p>${h(S.me.name)} · <strong>${h(S.me.profileName)}</strong></p>
+        <ul style="padding-left:18px;margin:0">${Object.keys(PERM_LABEL).map(p => `<li style="${S.me.perms.includes(p) ? '' : 'color:var(--muted);text-decoration:line-through'}">${PERM_LABEL[p]}</li>`).join('')}</ul></div>
+    </div>
+    <div class="two">
+      <div class="card"><h2>Setores</h2>
+        <div class="table-scroll"><table><thead><tr><th>Setor</th><th>Tipo</th><th>Status</th></tr></thead><tbody>${S.sectors.map(s => `<tr><td>${h(s.name)}</td><td>${h(s.type)}</td><td>${s.active ? 'Ativo' : 'Inativo'}</td></tr>`).join('')}</tbody></table></div>
+        ${c ? `<h3>Novo setor</h3><form class="grid2" data-form="sector"><label>Nome<input name="name" required minlength="2" maxlength="80"></label><label>Tipo<select name="type">${selectOpts(SECTOR_TYPES)}</select></label><button class="btn primary" type="submit">Salvar setor</button></form>` : ''}
+      </div>
+      <div class="card"><h2>Tipos de serviço (LC 116)</h2>
+        <div class="table-scroll"><table><thead><tr><th>Código</th><th>Serviço</th><th>Ativo</th></tr></thead><tbody>${S.services.map(s => `<tr><td>${h(s.code)}</td><td>${h(s.name)}</td><td><input type="checkbox" data-change="toggleService" data-id="${h(s.id)}" ${s.active ? 'checked' : ''} ${dis} aria-label="Ativar ${h(s.name)}"></td></tr>`).join('')}</tbody></table></div>
+        ${c ? `<h3>Novo serviço</h3><form class="grid2" data-form="service"><label>Nome<input name="name" required minlength="2" maxlength="120"></label><label>Código LC 116<input name="code" required placeholder="ex.: 1.07"></label><button class="btn primary" type="submit">Salvar serviço</button></form><p class="muted">Confira os códigos com a lista LC 116 do seu município.</p>` : ''}
+      </div>
+    </div>
+    <div class="card"><h2>Dados fiscais (para NF-e demonstrativa)</h2>
+      <form class="grid2" data-form="fiscal">
+        <label>CNPJ<input name="cnpj" value="${h(S.fiscal.cnpj)}" ${dis}></label>
+        <label>Razão social<input name="legalName" value="${h(S.fiscal.legalName)}" ${dis}></label>
+        <label>Endereço<input name="address" value="${h(S.fiscal.address)}" ${dis}></label>
+        <label>Cidade<input name="city" value="${h(S.fiscal.city)}" ${dis}></label>
+        <label>UF<input name="state" maxlength="2" value="${h(S.fiscal.state)}" ${dis}></label>
+        <label>CEP<input name="zip" value="${h(S.fiscal.zip)}" ${dis}></label>
+        <label>Inscrição municipal<input name="municipalRegistration" value="${h(S.fiscal.municipalRegistration)}" ${dis}></label>
+        <label>Alíquota ISS (%)<input type="number" step="0.01" min="0" max="5" name="issRate" value="${S.fiscal.issRate}" ${dis}></label>
+        ${c ? '<button class="btn primary" type="submit">Salvar dados fiscais</button>' : ''}
+      </form></div>
+`;
+}
+
+function usuariosTabHtml(c) {
+  return `<div class="card"><h2>Usuários</h2><div class="table-scroll"><table><thead><tr><th>Nome</th><th>Email</th><th>Perfil</th><th>Status</th><th></th></tr></thead><tbody>
+    ${S.users.map(x => `<tr><td>${h(x.name)}</td><td>${h(x.email)}</td><td>${c && S.profiles.length && x.id !== S.me.id ? `<select data-change="setUserProfile" data-id="${h(x.id)}" aria-label="Perfil de ${h(x.name)}">${S.profiles.map(p => `<option value="${h(p.id)}" ${p.id === x.profileId ? 'selected' : ''}>${h(p.name)}</option>`).join('')}</select>` : h(x.profileName)}</td><td><span class="badge ${x.active ? 'b-ok' : ''}">${x.active ? 'Ativo' : 'Inativo'}</span></td><td>${c ? `<button class="btn sm" data-act="toggleAviso" data-id="${h(x.id)}" data-v="${x.notifyChamados ? '0' : '1'}">${x.notifyChamados ? 'Aviso: sim' : 'Aviso: não'}</button> ` : ''}${c && x.id !== S.me.id ? `<button class="btn sm" data-act="toggleUser" data-id="${h(x.id)}" data-v="${x.active ? '0' : '1'}">${x.active ? 'Desativar' : 'Reativar'}</button>` : ''}</td></tr>`).join('')}
+    </tbody></table></div></div>
+    ${c ? `<div class="card"><h2>Novo perfil de usuário</h2>
+      <form class="grid2" data-form="user">
+        <label>Nome<input name="name" required minlength="2" maxlength="100"></label>
+        <label>Email<input type="email" name="email" required maxlength="255"></label>
+        ${S.profiles.length ? `<label>Perfil de acesso<select name="profileId">${S.profiles.map(p => `<option value="${h(p.id)}" ${p.id === 'p_atendente' ? 'selected' : ''}>${h(p.name)}</option>`).join('')}</select></label>`
+          : `<label>Perfil<select name="role">${Object.entries(ROLE_LABEL).map(([k, l]) => `<option value="${k}">${h(l)}</option>`).join('')}</select></label>`}
+        <label>Senha inicial<input type="password" name="password" required minlength="8" maxlength="100" autocomplete="new-password"></label>
+        <label style="flex-direction:row;align-items:center;gap:8px"><input type="checkbox" name="notifyChamados" checked style="width:auto"> Recebe aviso de chamado novo</label>
+        <p class="muted" style="grid-column:1/-1;margin:0">Entregue a senha inicial pessoalmente ou por canal seguro. A pessoa entra com o email e essa senha.</p>
+        <button class="btn primary" type="submit">Criar usuário</button>
+      </form></div>` : '<div class="card muted">Só o gestor cria ou desativa usuários.</div>'}`;
+}
+function perfisTabHtml(c) {
+  if (!S.profiles.length) return '<div class="card muted">Rode a migração v7 no banco para usar os perfis de acesso.</div>';
+  const telas = Object.entries(S.screenLabels);
+  const checks = (p, dis) => `
+    <fieldset><legend>Telas que abre</legend><div class="checks">${telas.map(([k, l]) => `<label class="check"><input type="checkbox" name="s_${k}" ${p && p.screens.includes(k) ? 'checked' : ''} ${dis}> ${h(l)}</label>`).join('')}</div></fieldset>
+    <fieldset><legend>O que pode fazer</legend><div class="checks">${Object.entries(PERM_LABEL).map(([k, l]) => `<label class="check"><input type="checkbox" name="p_${k}" ${p && p.perms.includes(k) ? 'checked' : ''} ${dis}> ${h(l)}</label>`).join('')}</div></fieldset>`;
+  const cards = S.profiles.map(p => {
+    const fixo = p.id === 'p_gestor';
+    const dis = c && !fixo ? '' : 'disabled';
+    return `<div class="card"><form class="stack" data-form="profile" data-id="${h(p.id)}">
+      <div style="display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap">
+        <h2 style="margin:0">${h(p.name)}</h2>
+        <span class="muted">${p.builtin ? 'Perfil padrão' : 'Perfil criado'} · ${p.users} usuário(s)</span>
+      </div>
+      ${fixo ? '<p class="muted" style="margin:0">Acesso total. Este perfil não pode ser alterado, para sempre haver alguém que administre o sistema.</p>'
+        : (c ? `<label>Nome<input name="name" value="${h(p.name)}" required minlength="2" maxlength="60"></label>` : '')}
+      ${checks(p, dis)}
+      ${c && !fixo ? `<div class="actions"><button class="btn primary" type="submit">Salvar perfil</button>${p.builtin ? '' : `<button class="btn" type="button" data-act="delProfile" data-id="${h(p.id)}">Excluir perfil</button>`}</div>` : ''}
+    </form></div>`;
+  }).join('');
+  return cards + (c ? `<div class="card"><h2>Novo perfil</h2><form class="stack" data-form="profile">
+      <label>Nome do perfil<input name="name" required minlength="2" maxlength="60" placeholder="Ex.: Técnico de campo, Financeiro, CEO"></label>
+      ${checks(null, '')}
+      <div class="actions"><button class="btn primary" type="submit">Criar perfil</button></div>
+    </form></div>` : '<div class="card muted">Só quem pode configurar altera os perfis.</div>');
+}
+function customizarRelatoriosHtml() {
+  const c = can('configure');
+  return `<div class="card"><h2>Campos dos relatórios</h2>
+      <p class="muted">Os campos aparecem no formulário de envio e no relatório. O campo "Valor (R$)" alimenta a NF-e demonstrativa e não pode ser removido.</p>
+      ${Object.entries(TEMPLATES).map(([tid, t]) => `<h3>${h(t.name)}</h3><div class="table-scroll"><table><tbody>${fieldRowsHtml(t.fields, 'report', tid, c)}</tbody></table></div>`).join('')}
+      ${c ? `<h3>Novo campo do relatório</h3>${fieldAdderHtml('report')}` : ''}
+    </div>`;
+}
+/* ==================== Colaboradores, vencimentos e avisos ==================== */
+const EXAM_KINDS = ['Admissional', 'Periódico', 'Mudança de função', 'Retorno ao trabalho', 'Demissional'];
+const DOC_KINDS = ['INSS', 'FGTS', 'Nota fiscal', 'Outro'];
+const diasAte = iso => Math.round((Date.parse(iso + 'T00:00:00Z') - Date.parse(todayIso() + 'T00:00:00Z')) / 86400000);
+function vencimentoBadge(iso) {
+  if (!iso) return '<span class="muted">Sem validade</span>';
+  const d = diasAte(iso);
+  if (d < 0) return `<span class="badge b-late">Vencido em ${fmtDate(iso)}</span>`;
+  if (d <= 60) return `<span class="badge b-late">Vence em ${d} dia(s)</span>`;
+  if (d <= 180) return `<span class="badge b-warn">Vence em ${fmtDate(iso)}</span>`;
+  return `<span class="badge b-ok">Em dia · ${fmtDate(iso)}</span>`;
+}
+/* Itens que vencem em até 6 meses (ou já venceram), de todos os colaboradores. */
+function vencimentosHtml() {
+  const itens = [];
+  for (const e of S.employees) {
+    e.exams.forEach(x => itens.push({tipo: 'Exame', nome: `${x.kind}: ${x.name}`, quem: e, iso: x.expiresOn}));
+    e.epis.forEach(x => itens.push({tipo: 'EPI', nome: x.name, quem: e, iso: x.expiresOn}));
+    e.documents.forEach(x => itens.push({tipo: 'Documento', nome: `${x.kind}: ${x.name}`, quem: e, iso: x.expiresOn}));
+  }
+  const proximos = itens.filter(i => i.iso && diasAte(i.iso) <= 180).sort((a, b) => a.iso.localeCompare(b.iso));
+  if (!proximos.length) return '<div class="card"><h2>Vencimentos</h2><p class="muted">Nada vencendo nos próximos 6 meses.</p></div>';
+  return `<div class="card"><h2>Vencimentos (próximos 6 meses)</h2><div class="table-scroll"><table><thead><tr><th>Colaborador</th><th>Tipo</th><th>Item</th><th>Situação</th></tr></thead><tbody>
+    ${proximos.map(i => `<tr><td><a href="#/colaboradores/${h(i.quem.id)}">${h(i.quem.name)}</a></td><td>${i.tipo}</td><td>${h(i.nome)}</td><td>${vencimentoBadge(i.iso)}</td></tr>`).join('')}
+    </tbody></table></div><p class="muted" style="margin-bottom:0">O RH recebe aviso no app aos 6, 3 e 2 meses do vencimento e no dia em que vence.</p></div>`;
+}
+function colaboradoresView() {
+  if (!can('configure')) return pageHead('Colaboradores', '') + '<div class="card muted">Só o gestor acessa o cadastro de colaboradores.</div>';
+  return pageHead('Colaboradores', 'Cadastro, EPIs, exames e documentos da equipe.') + `
+    ${vencimentosHtml()}
+    <div class="card"><h2>Colaboradores</h2><div class="table-scroll"><table><thead><tr><th>Nome</th><th>Cargo</th><th>Login</th><th>Status</th><th></th></tr></thead><tbody>
+      ${S.employees.map(e => `<tr><td>${h(e.name)}</td><td>${h(e.roleTitle)}</td><td>${e.hasLogin ? 'Sim' : 'Não'}</td><td><span class="badge ${e.active ? 'b-ok' : ''}">${e.active ? 'Ativo' : 'Inativo'}</span></td><td><a class="btn sm" href="#/colaboradores/${h(e.id)}">Abrir</a></td></tr>`).join('') || '<tr><td colspan="5" class="muted">Nenhum colaborador cadastrado.</td></tr>'}
+      </tbody></table></div></div>
+    <div class="card"><h2>Novo colaborador</h2>
+      <form class="grid2" data-form="employee">
+        <label>Nome<input name="name" required minlength="2" maxlength="100"></label>
+        <label>Cargo / função<input name="roleTitle" maxlength="100"></label>
+        <label>Email<input type="email" name="email" maxlength="255"></label>
+        <label>Telefone<input name="phone" maxlength="30"></label>
+        <label>Senha para o login (opcional)<input type="password" name="password" minlength="8" maxlength="100" autocomplete="new-password"></label>
+        <p class="muted" style="grid-column:1/-1;margin:0">Com email e senha, o colaborador entra no ATENDA e recebe os avisos de chamado.</p>
+        <button class="btn primary" type="submit">Cadastrar</button>
+      </form></div>`;
+}
+function colaboradorView(id) {
+  const e = S.employees.find(x => x.id === id);
+  if (!e) return pageHead('Colaborador', '') + '<div class="card muted">Colaborador não encontrado.</div>';
+  const c = can('configure');
+  const del = (kind, x) => c ? `<button class="btn sm" data-act="delItem" data-kind="${kind}" data-id="${h(x.id)}">Excluir</button>` : '';
+  const epis = e.epis.map(x => `<tr><td>${h(x.name)}</td><td>${h(x.caNumber || '—')}</td><td>${x.deliveredOn ? fmtDate(x.deliveredOn) : '—'}</td><td>${vencimentoBadge(x.expiresOn)}</td><td>${del('epi', x)}</td></tr>`).join('');
+  const exams = e.exams.map(x => `<tr><td>${h(x.kind)}</td><td>${h(x.name)}</td><td>${fmtDate(x.doneOn)}</td><td>${x.validMonths} mes(es)</td><td>${vencimentoBadge(x.expiresOn)}</td><td>${del('exam', x)}</td></tr>`).join('');
+  const docs = e.documents.map(x => `<tr><td>${h(x.kind)}</td><td>${h(x.name)}</td><td>${vencimentoBadge(x.expiresOn)}</td><td>${x.attachmentId ? attachHtml(x.attachmentId) : (c ? `<input type="file" accept="image/*,application/pdf" data-change="docUpload" data-id="${h(x.id)}">` : '<span class="muted">Pendente</span>')}</td><td>${del('doc', x)}</td></tr>`).join('');
+  const tabela = (cab, linhas, vazio) => `<div class="table-scroll"><table><thead><tr>${cab.map(t => `<th>${t}</th>`).join('')}</tr></thead><tbody>${linhas || `<tr><td colspan="${cab.length}" class="muted">${vazio}</td></tr>`}</tbody></table></div>`;
+  return pageHead(e.name, `${e.roleTitle || 'Sem cargo'} · ${e.hasLogin ? 'tem login no ATENDA' : 'sem login'}`, '<div class="actions"><a class="btn" href="#/colaboradores">Voltar</a></div>') + `
+    ${c ? `<div class="card"><button class="btn sm" data-act="toggleEmployee" data-id="${h(e.id)}" data-v="${e.active ? '0' : '1'}">${e.active ? 'Desativar colaborador' : 'Reativar colaborador'}</button></div>` : ''}
+    <div class="card"><h2>EPIs</h2>
+      ${tabela(['EPI', 'CA', 'Entregue em', 'Validade', ''], epis, 'Nenhum EPI registrado.')}
+      ${c ? `<h3>Novo EPI</h3><form class="grid2" data-form="epi" data-id="${h(e.id)}">
+        <label>Nome do EPI<input name="name" required maxlength="100" placeholder="Ex.: Luva de couro"></label>
+        <label>CA<input name="caNumber" maxlength="30"></label>
+        <label>Entregue em<input type="date" name="deliveredOn"></label>
+        <label>Validade<input type="date" name="expiresOn"></label>
+        <div class="actions" style="grid-column:1/-1"><button class="btn primary" type="submit">Adicionar EPI</button></div></form>` : ''}
+    </div>
+    <div class="card"><h2>Exames</h2>
+      ${tabela(['Tipo', 'Exame', 'Feito em', 'Validade', 'Vencimento', ''], exams, 'Nenhum exame registrado.')}
+      ${c ? `<h3>Novo exame</h3><form class="grid2" data-form="exam" data-id="${h(e.id)}">
+        <label>Tipo<select name="kind">${EXAM_KINDS.map(k => `<option>${h(k)}</option>`).join('')}</select></label>
+        <label>Nome do exame<input name="name" required maxlength="100" placeholder="Ex.: ASO, audiometria"></label>
+        <label>Feito em<input type="date" name="doneOn" required></label>
+        <label>Validade (meses)<input type="number" name="validMonths" value="12" min="1" max="120" required></label>
+        <div class="actions" style="grid-column:1/-1"><button class="btn primary" type="submit">Adicionar exame</button></div></form>` : ''}
+    </div>
+    <div class="card"><h2>Documentos</h2>
+      <p class="muted">INSS, FGTS e os documentos que o cliente pede para faturar a nota fiscal. Anexe o arquivo (imagem ou PDF, até 5 MB).</p>
+      ${tabela(['Tipo', 'Documento', 'Validade', 'Arquivo', ''], docs, 'Nenhum documento registrado.')}
+      ${c ? `<h3>Novo documento</h3><form class="grid2" data-form="doc" data-id="${h(e.id)}">
+        <label>Tipo<select name="kind">${DOC_KINDS.map(k => `<option>${h(k)}</option>`).join('')}</select></label>
+        <label>Nome do documento<input name="name" required maxlength="100" placeholder="Ex.: Guia INSS de outubro"></label>
+        <label>Validade (se houver)<input type="date" name="expiresOn"></label>
+        <div class="actions" style="grid-column:1/-1"><button class="btn primary" type="submit">Adicionar documento</button></div></form>` : ''}
+    </div>`;
+}
+function avisosView() {
+  const marcar = S.notifications.some(n => !n.read) ? '<button class="btn sm" data-act="readAll">Marcar todas como lidas</button>' : '';
+  return pageHead('Avisos', 'Chamados novos e vencimentos de exames, EPIs e documentos.', `<div class="actions">${marcar}</div>`) + `
+    <div class="card">${S.notifications.length ? S.notifications.map(n => `<div class="cardk" data-act="readOne" data-id="${h(n.id)}" data-link="${h(n.link)}" style="cursor:pointer;display:flex;gap:10px;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;${n.read ? 'opacity:.6' : ''}">
+      <div><strong>${h(n.title)}</strong>${n.read ? '' : ' <span class="badge b-warn">Novo</span>'}<div class="muted">${h(n.body)}</div><div class="muted" style="font-size:12px">${h(n.createdAt)}</div></div></div>`).join('') : '<p class="muted">Nenhum aviso.</p>'}
+    </div>`;
+}
+
+const slugify = s => String(s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+const VIEWS = {
+  dashboard: () => dashView(), chamados: () => chamadosView(), novo: () => novoView(), agenda: () => agendaView(), kanban: () => kanbanView(),
+  relatorios: () => relatoriosView(), nfe: () => nfeView(), clientes: () => clientesView(), tarefas: () => tarefasView(),
+  sla: () => slaView(), config: () => configView(), colaboradores: () => colaboradoresView(), avisos: () => avisosView()
+};
+
+function renderLogin() {
+  document.body.classList.add('auth');
+  document.body.classList.remove('nav-open');
+  $('#nav').innerHTML = ''; $('#topbar').innerHTML = ''; $('#side-cta').innerHTML = '';
+  MODAL = null; renderModal();
+  $('#app').innerHTML = `<div class="login-wrap"><div class="login">
+    <img class="logo-hero" src="/brand/atenda-logo.webp" alt="ATENDA · Soluções Omega" width="900" height="311">
+    <div class="card"><h1>Entrar no ATENDA</h1><p class="sub" style="margin-bottom:18px">Central de atendimento e gestão de chamados.</p>
+    <form class="stack" data-form="login">
+      <label>Email<input type="email" name="email" required autocomplete="username" placeholder="voce@empresa.com.br"></label>
+      <label>Senha<input type="password" name="password" required autocomplete="current-password"></label>
+      <p id="login-err" role="alert" style="color:var(--danger);margin:0;min-height:1em;font-size:13px"></p>
+      <button class="btn primary" type="submit" style="justify-content:center;padding:11px 15px">Entrar</button>
+    </form></div>
+    <p class="login-foot">Soluções Omega · ATENDA</p></div></div>`;
+  document.title = 'ATENDA — Entrar';
+}
+const navOk = k => tela(k) && (k !== 'colaboradores' || can('configure'));
+function renderNav() {
+  document.body.classList.remove('auth');
+  const pend = S.tickets.filter(aberto).length;
+  $('#nav').innerHTML = NAV_SECTIONS.map(([sec, keys]) => {
+    const itens = keys.filter(navOk);
+    if (!itens.length) return '';
+    return `<div class="sec">${sec}</div>` + itens.map(k => {
+      let cnt = '';
+      if (k === 'chamados' && pend) cnt = `<span class="cnt" title="Chamados não concluídos">${pend}</span>`;
+      if (k === 'avisos' && S.unreadCount) cnt = `<span class="cnt alert" title="Avisos não lidos">${S.unreadCount}</span>`;
+      return `<a href="#/${k}" data-r="${k}">${ic(k)}<span>${ROUTES[k]}</span>${cnt}</a>`;
+    }).join('');
+  }).join('');
+  $('#side-cta').innerHTML = can('receive') && tela('novo') ? `<a class="btn primary" href="#/novo">${ic('plus')} Novo chamado</a>` : '';
+  const hr = new Date().getHours();
+  const saud = hr < 12 ? 'Bom dia' : hr < 18 ? 'Boa tarde' : 'Boa noite';
+  const hoje = new Date().toLocaleDateString('pt-BR', {weekday: 'long', day: 'numeric', month: 'long'});
+  const n = S.unreadCount;
+  const bell = tela('avisos') ? `<a class="iconbtn" href="#/avisos" aria-label="Avisos${n ? `: ${n} não lido(s)` : ''}" title="Avisos">${ic('avisos')}${n ? `<span class="dot">${n > 99 ? '99+' : n}</span>` : ''}</a>` : '';
+  const busca = tela('chamados') || tela('clientes')
+    ? `<div class="gsearch" role="search">${ic('search')}<input type="search" id="gsearch" placeholder="${innerWidth < 700 ? 'Buscar' : 'Buscar chamado, cliente ou número'}" autocomplete="off" aria-label="Busca global"><div class="gres" id="gres"></div></div>`
+    : '<div style="flex:1"></div>';
+  $('#topbar').innerHTML = `<button class="iconbtn hamb" data-act="openNav" aria-label="Abrir menu">${ic('menu')}</button>
+    <div class="greet"><strong>${saud}, ${h(S.me.name.split(' ')[0])}</strong><span>${h(hoje)}</span></div>
+    ${busca}${bell}
+    <div class="who" id="who">
+      <details class="pmenu"><summary aria-label="Menu do perfil"><span class="avatar">${h(initials(S.me.name))}</span><span class="who-txt"><b>${h(S.me.name)}</b><span>${h(S.me.profileName)}</span></span></summary>
+        <div class="menu-pop">
+          <div style="padding:8px 10px 10px;border-bottom:1px solid var(--border);margin-bottom:6px"><b style="display:block">${h(S.me.name)}</b><span class="muted">Nível de acesso: ${h(S.me.profileName)}</span></div>
+          ${tela('config') ? `<a href="#/config">${ic('user')} Meu perfil e configurações</a>` : ''}
+          ${tela('avisos') ? `<a href="#/avisos">${ic('avisos')} Avisos</a>` : ''}
+        </div></details>
+      <button class="iconbtn" data-act="logout" aria-label="Sair" title="Sair">${ic('logout')}</button>
+    </div>`;
+}
+function gsearch(q) {
+  const box = $('#gres'); if (!box) return;
+  q = q.trim().toLowerCase().replace(/^#/, '');
+  if (!q) { box.classList.remove('show'); box.innerHTML = ''; return; }
+  const tks = tela('chamados') ? [...S.tickets, ...S.archivedTickets].filter(t => `${t.id} ${t.title} ${t.client}`.toLowerCase().includes(q)).slice(0, 6) : [];
+  const cls = tela('clientes') ? S.clients.filter(c => `${c.name} ${c.company} ${c.email}`.toLowerCase().includes(q)).slice(0, 4) : [];
+  box.innerHTML = (tks.length ? '<div class="gh">Chamados</div>' + tks.map(t => `<a href="#/chamados/${t.id}">${statusBadge(t.status)}<span style="min-width:0"><b>#${t.id}</b> ${h(t.title)}<span class="muted" style="display:block">${h(t.client)}</span></span></a>`).join('') : '')
+    + (cls.length ? '<div class="gh">Clientes</div>' + cls.map(c => `<a href="#/clientes">${ic('clientes')}<span>${h(c.company)}<span class="muted" style="display:block">${h(c.name)}</span></span></a>`).join('') : '')
+    + (!tks.length && !cls.length ? '<p class="muted" style="margin:0;padding:10px">Nada encontrado.</p>' : '')
+    + (tks.length && tela('chamados') ? '<p class="muted" style="margin:0;padding:6px 10px">Enter mostra todos os resultados em Chamados.</p>' : '');
+  box.classList.add('show');
+}
+function render() {
+  if (!S) return renderLogin();
+  renderNav();
+  document.body.classList.remove('nav-open');
+  const [name, id] = location.hash.replace(/^#\/?/, '').split('/');
+  let key = name === 'chamados' && id ? 'chamados' : (name === 'novo' ? 'novo' : (VIEWS[name] ? name : 'dashboard'));
+  // Sem rota (ou dashboard fechado para o perfil): abre a primeira tela liberada.
+  if ((!name || name === 'dashboard') && !tela(key)) key = Object.keys(ROUTES).find(tela) || key;
+  const active = key === 'novo' ? 'chamados' : key;
+  document.querySelectorAll('#nav a').forEach(a => { const on = a.dataset.r === active; a.classList.toggle('on', on); if (on) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current'); });
+  if (!tela(key)) {
+    $('#app').innerHTML = pageHead(key === 'novo' ? 'Novo chamado' : ROUTES[key], '') + '<div class="card empty">Seu perfil não tem acesso a esta tela. Fale com o gestor.</div>';
+  } else {
+    $('#app').innerHTML = key === 'chamados' && id ? detalheView(id) : (key === 'colaboradores' && id ? colaboradorView(id) : VIEWS[key]());
+  }
+  document.title = `ATENDA — ${key === 'novo' ? 'Novo chamado' : ROUTES[key]}`;
+  if (location.hash !== lastHash) { lastHash = location.hash; window.scrollTo(0, 0); }
+  renderModal();
+}
+
+/* ==================== Ações ==================== */
+const FORMS = {
+  async newTicket(f) {
+    const d = Object.fromEntries(new FormData(f));
+    const payload = {title: d.title, client: d.client, category: d.category, sector: d.sector, priority: d.priority, description: d.description};
+    payload.custom = collectFields(f, S.ticketFields, 't_');
+    if (f.elements.visit.checked) payload.visit = agendaPayload(f, 'a_');
+    const r = await api('POST', '/api/tickets', payload);
+    location.hash = `#/chamados/${r.id}`;
+    // Responsável: usa a mesma rota da troca de responsável no chamado.
+    if (d.agent) {
+      try { await api('PATCH', `/api/tickets/${r.id}`, {agent: d.agent}); }
+      catch (e) { return `Chamado criado, mas o responsável não foi definido: ${e.message}`; }
+    }
+    return 'Chamado criado.';
+  },
+  async reply(f) {
+    const body = f.elements.body.value.trim();
+    await api('POST', `/api/tickets/${f.dataset.id}/messages`, {body, internal: f.elements.internal.checked});
+    return 'Mensagem registrada.';
+  },
+  async report(f) {
+    const tpl = f.elements.tpl.value;
+    const values = collectFields(f, TEMPLATES[tpl].fields, 'f_');
+    const extras = [...f.querySelectorAll('.extra-row')].map(row => {
+      const label = row.querySelector('input[name^="xl_"]').value.trim();
+      if (!label) throw new Error('Dê um nome para cada item extra.');
+      return {label, kind: row.dataset.kind, value: row.querySelector('[name^="xv_"]').value};
+    });
+    await api('POST', `/api/tickets/${f.dataset.id}/reports`, {template: tpl, service: f.elements.svc.value, values, extras});
+    return 'Relatório enviado para validação.';
+  },
+  async review(f, submitter) {
+    const approve = !!submitter && submitter.value === 'approve';
+    await api('POST', `/api/reports/${f.dataset.id}/review`, {approve, feedback: f.elements.feedback.value});
+    selRep = null;
+    return approve ? 'Relatório validado. NF-e demonstrativa gerada.' : 'Relatório devolvido para correção.';
+  },
+  async gen(f) {
+    G = {show: true, type: f.elements.type.value, status: f.elements.status.value, fmt: f.elements.fmt.value};
+    return '';
+  },
+  async addField(f) {
+    const body = {
+      label: f.elements.label.value, kind: f.elements.kind.value, required: f.elements.required.checked,
+      options: [...f.querySelectorAll('input[name=opt]')].map(i => i.value),
+      free: f.elements.free ? f.elements.free.checked : false
+    };
+    if (f.dataset.scope === 'report') {
+      body.template = f.elements.template.value;
+      await api('POST', '/api/report-fields', body);
+      return 'Campo adicionado ao relatório.';
+    }
+    await api('POST', '/api/ticket-fields', body);
+    return 'Campo adicionado ao chamado.';
+  },
+  async agenda(f) {
+    await api('POST', `/api/tickets/${f.dataset.id}/agenda`, agendaPayload(f, 'a_'));
+    return 'Visita agendada.';
+  },
+  async sla(f) {
+    const data = {};
+    PRIORITIES.forEach(p => { data[p] = {resp: f.elements['resp_' + p].value, res: f.elements['res_' + p].value}; });
+    await api('PUT', '/api/sla', data);
+    return 'Políticas salvas.';
+  },
+  async sector(f) {
+    await api('POST', '/api/sectors', {name: f.elements.name.value, type: f.elements.type.value});
+    return 'Setor criado.';
+  },
+  async service(f) {
+    await api('POST', '/api/services', {name: f.elements.name.value, code: f.elements.code.value});
+    return 'Serviço criado.';
+  },
+  async fiscal(f) {
+    const v = Object.fromEntries(new FormData(f));
+    await api('PUT', '/api/fiscal', {...v, issRate: Number(v.issRate)});
+    return 'Dados fiscais salvos.';
+  },
+  async client(f) {
+    await api('POST', '/api/clients', Object.fromEntries(new FormData(f)));
+    MODAL = null;
+    return 'Cliente cadastrado.';
+  },
+  async editOptsForm(f) {
+    const options = [...f.querySelectorAll('input[name=opt]')].map(i => i.value.trim()).filter(Boolean);
+    const url = f.dataset.scope === 'ticket' ? `/api/ticket-fields/${f.dataset.id}` : `/api/report-fields/${f.dataset.template}/${f.dataset.id}`;
+    await api('PATCH', url, {options, free: f.elements.free.checked});
+    MODAL = null;
+    return 'Opções atualizadas.';
+  },
+  async employee(f) {
+    await api('POST', '/api/employees', Object.fromEntries(new FormData(f)));
+    return 'Colaborador cadastrado.';
+  },
+  async epi(f) {
+    await api('POST', `/api/employees/${f.dataset.id}/epis`, Object.fromEntries(new FormData(f)));
+    return 'EPI adicionado.';
+  },
+  async exam(f) {
+    await api('POST', `/api/employees/${f.dataset.id}/exams`, Object.fromEntries(new FormData(f)));
+    return 'Exame adicionado. O vencimento foi calculado.';
+  },
+  async doc(f) {
+    await api('POST', `/api/employees/${f.dataset.id}/documents`, Object.fromEntries(new FormData(f)));
+    return 'Documento adicionado. Anexe o arquivo na lista.';
+  },
+  async profile(f) {
+    const marcadas = pre => [...f.querySelectorAll(`input[type=checkbox][name^="${pre}"]`)].filter(i => i.checked).map(i => i.name.slice(pre.length));
+    const dados = {name: f.elements.name.value, screens: marcadas('s_'), perms: marcadas('p_')};
+    if (f.dataset.id) { await api('PATCH', `/api/profiles/${f.dataset.id}`, dados); return 'Perfil salvo.'; }
+    await api('POST', '/api/profiles', dados);
+    return 'Perfil criado. Escolha-o na aba Usuários.';
+  },
+  async user(f) {
+    const dados = Object.fromEntries(new FormData(f));
+    await api('POST', '/api/users', {...dados, notifyChamados: !!dados.notifyChamados});
+    return 'Usuário criado. Entregue a senha inicial com segurança.';
+  },
+  async task(f) {
+    await api('POST', '/api/tasks', Object.fromEntries(new FormData(f)));
+    return 'Tarefa criada.';
+  }
+};
+const CHANGES = {
+  docUpload: el => docUpload(el),
+  prioPick(el) { const box = $('#sla-info'); if (box) box.innerHTML = slaInfoHtml(el.value); },
+  setUserProfile(el) { return act(() => api('PATCH', `/api/users/${el.dataset.id}`, {profileId: el.value}).then(() => 'Perfil do usuário atualizado.')); },
+  filter(el) { CF[el.dataset.k] = el.value; },
+  agTec(el) { AG.tec = el.value; },
+  toggleVisit(el) { const box = $('#visit-box'); if (box) box.style.display = el.checked ? 'block' : 'none'; },
+  agendaStatus(el) { return act(() => api('PATCH', `/api/agenda/${el.dataset.id}`, {status: el.value}).then(() => 'Status do agendamento atualizado.')); },
+  filterRep(el) { RF = el.value; },
+  tplChange(el) { const box = $('#repFields'); if (box) box.innerHTML = reportFieldsHtml(el.value); },
+  maisAdd(el) {
+    const v = el.value; el.value = '';
+    if (!v) return;
+    if (v.startsWith('opt:')) {
+      const row = el.closest('form').querySelector(`[data-opt="${v.slice(4)}"]`);
+      if (row) row.style.display = 'block';
+      const opt = el.querySelector(`option[value="${v}"]`); if (opt) opt.disabled = true;
+      return;
+    }
+    const list = el.closest('[data-mais]').querySelector('[data-extras]');
+    if (list.querySelectorAll('.extra-row').length >= MAX_EXTRAS) { toast(`Limite de ${MAX_EXTRAS} itens extras por relatório.`, true); return; }
+    list.insertAdjacentHTML('beforeend', extraRowHtml(v === 'file' ? 'attachment' : 'text'));
+  },
+  upload(el) { return uploadFile(el); },
+  selectFree(el) { const box = el.parentElement.querySelector('[data-free-box]'); if (box) box.style.display = el.value === '__free__' ? 'block' : 'none'; },
+  kindChange(el) { const box = el.closest('form').querySelector('[data-opts-box]'); if (box) box.style.display = el.value === 'select' ? 'block' : 'none'; },
+  clientPick(el) { const box = $('#client-info'); if (box) box.innerHTML = clientCardHtml(S.clients.find(c => c.id === el.value)); },
+  setStatus(el) { return act(() => api('PATCH', `/api/tickets/${el.dataset.id}`, {status: el.value}).then(() => 'Status atualizado.')); },
+  moveTicket(el) { return act(() => api('PATCH', `/api/tickets/${el.dataset.id}`, {status: el.value}).then(() => 'Chamado movido.')); },
+  setAgent(el) { return act(() => api('PATCH', `/api/tickets/${el.dataset.id}`, {agent: el.value}).then(() => 'Responsável atualizado.')); },
+  toggleService(el) { return act(() => api('PATCH', `/api/services/${el.dataset.id}`, {active: el.checked}).then(() => 'Serviço atualizado.')); }
+};
+const ACTS = {
+  toggleTask(el) {
+    const t = S.tasks.find(x => x.id === el.dataset.id);
+    if (t) return act(() => api('PATCH', `/api/tasks/${t.id}`, {done: !t.done}));
+  },
+  pickReport(el) { selRep = el.dataset.id; render(); setTimeout(() => { const p = $('#review'); if (p) p.scrollIntoView({behavior: 'smooth', block: 'start'}); }, 0); },
+  closeReview() { selRep = null; render(); },
+  repTab(el) { repTab = el.dataset.v; render(); },
+  agMode(el) { AG.mode = el.dataset.v; render(); },
+  agNav(el) {
+    if (el.dataset.v === '0') { AG.ym = todayIso().slice(0, 7); render(); return; }
+    const [y, m] = AG.ym.split('-').map(Number);
+    const d = new Date(y, m - 1 + Number(el.dataset.v), 1);
+    AG.ym = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+    render();
+  },
+  genType(el) { G = {show: true, type: el.dataset.v, status: '', fmt: G.fmt}; render(); },
+  chamTab(el) { chamModo = 'chamados'; CF.arch = el.dataset.v === 'arquivados'; render(); },
+  chamModo(el) { chamModo = el.dataset.v; render(); },
+  async archiveTicket(el) {
+    const arch = el.dataset.v === '1';
+    if (arch && !(await ask('Arquivar chamado', 'O chamado sai da lista e do Kanban. O histórico e a NF-e continuam guardados e ele pode ser restaurado depois.', 'Arquivar'))) return;
+    return act(() => api('PATCH', `/api/tickets/${el.dataset.id}`, {archived: arch}).then(() => {
+      if (arch) { CF.arch = false; location.hash = '#/chamados'; }
+      return arch ? 'Chamado arquivado.' : 'Chamado restaurado.';
+    }));
+  },
+  toggleClient(el) {
+    const active = el.dataset.v === '1';
+    return act(() => api('PATCH', `/api/clients/${el.dataset.id}`, {active}).then(() => active ? 'Cliente reativado.' : 'Cliente arquivado.'));
+  },
+  archTask(el) {
+    const arch = el.dataset.v === '1';
+    return act(() => api('PATCH', `/api/tasks/${el.dataset.id}`, {archived: arch}).then(() => arch ? 'Tarefa arquivada.' : 'Tarefa restaurada.'));
+  },
+  async delField(el) {
+    if (!(await ask('Excluir campo', 'Os dados já salvos não são alterados.', 'Excluir', true))) return;
+    const url = el.dataset.scope === 'ticket' ? `/api/ticket-fields/${el.dataset.id}` : `/api/report-fields/${el.dataset.template}/${el.dataset.id}`;
+    return act(() => api('DELETE', url, {}).then(() => 'Campo excluído.'));
+  },
+  editOpts(el) {
+    const id = el.dataset.id;
+    const field = el.dataset.scope === 'ticket' ? S.ticketFields.find(x => x.id === id) : (TEMPLATES[el.dataset.template] || {fields: []}).fields.find(x => x.id === id);
+    if (!field) return;
+    openModal('Opções da lista', `<form class="stack" data-form="editOptsForm" data-scope="${h(el.dataset.scope)}" data-template="${h(el.dataset.template || '')}" data-id="${h(id)}">
+      <p class="mb" style="margin:0">${h(field.label)}</p>
+      <div data-opts class="stack">${(field.options.list.length ? field.options.list : ['']).map(o => optRowHtml(o)).join('')}</div>
+      <div class="actions" style="justify-content:space-between"><button type="button" class="btn sm" data-act="addOpt">+ Adicionar opção</button>
+        <label class="inline"><input type="checkbox" name="free" ${field.options.free ? 'checked' : ''}> Permitir texto livre (opção "Outra")</label></div>
+      <div class="actions end"><button type="button" class="btn ghost" data-act="closeModal">Cancelar</button><button class="btn primary" type="submit">Salvar opções</button></div>
+    </form>`);
+  },
+  addOpt(el) { el.closest('form').querySelector('[data-opts]').insertAdjacentHTML('beforeend', optRowHtml()); },
+  rmOpt(el) { el.parentElement.remove(); },
+  cfgTab(el) { cfgTab = el.dataset.v; render(); },
+  async delProfile(el) {
+    if (!(await ask('Excluir perfil', 'O perfil deixa de existir. Só é possível excluir perfis sem usuários.', 'Excluir', true))) return;
+    return act(() => api('DELETE', `/api/profiles/${el.dataset.id}`, {}).then(() => 'Perfil excluído.'));
+  },
+  toggleAviso(el) {
+    const v = el.dataset.v === '1';
+    return act(() => api('PATCH', `/api/users/${el.dataset.id}`, {notifyChamados: v}).then(() => 'Aviso de chamado atualizado.'));
+  },
+  toggleEmployee(el) {
+    const v = el.dataset.v === '1';
+    return act(() => api('PATCH', `/api/employees/${el.dataset.id}`, {active: v}).then(() => v ? 'Colaborador reativado.' : 'Colaborador desativado.'));
+  },
+  async delItem(el) {
+    if (!(await ask('Excluir item', 'Este registro do colaborador será excluído.', 'Excluir', true))) return;
+    return act(() => api('DELETE', `/api/employee-items/${el.dataset.kind}/${el.dataset.id}`, {}).then(() => 'Item excluído.'));
+  },
+  readOne(el) {
+    if (el.dataset.link) location.hash = el.dataset.link;
+    return act(() => api('POST', `/api/notifications/${el.dataset.id}/read`, {}).then(() => null));
+  },
+  readAll() { return act(() => api('POST', '/api/notifications/read-all', {}).then(() => 'Avisos marcados como lidos.')); },
+  toggleUser(el) {
+    const active = el.dataset.v === '1';
+    return act(() => api('PATCH', `/api/users/${el.dataset.id}`, {active}).then(() => active ? 'Usuário reativado.' : 'Usuário desativado.'));
+  },
+  rmExtra(el) { el.closest('.extra-row').remove(); },
+  copyLink(el) {
+    if (!el.dataset.token) { toast('Link ainda não gerado. Atualize a página.', true); return; }
+    const url = `${location.origin}/abrir?e=${slugify(el.dataset.company)}&t=${el.dataset.token}`;
+    const mostrar = () => openModal('Link do cliente', `<p class="mb">Envie ao cliente ${h(el.dataset.company)} por WhatsApp ou email. Pelo link ele abre chamados sem login.</p>
+      <input id="link-out" readonly value="${h(url)}" aria-label="Link do cliente"><div class="actions end"><button class="btn ghost" data-act="closeModal">Fechar</button><button class="btn primary" data-act="copyOut">${ic('link')} Copiar link</button></div>`);
+    if (navigator.clipboard && window.isSecureContext) {
+      return navigator.clipboard.writeText(url).then(() => toast('Link copiado.'), mostrar);
+    }
+    mostrar();
+  },
+  copyOut() {
+    const i = $('#link-out'); if (!i) return;
+    i.select();
+    let ok = false; try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+    toast(ok ? 'Link copiado.' : 'Selecione o link e copie.', !ok);
+  },
+  async newLink(el) {
+    if (!(await ask('Gerar novo link', 'O link antigo deste cliente deixa de funcionar.', 'Gerar novo link'))) return;
+    return act(() => api('POST', `/api/clients/${el.dataset.id}/link`, {}).then(() => 'Novo link gerado. Use “Copiar link”.'));
+  },
+  toggleClientForm() { openModal('Novo cliente', clientFormHtml(), true); },
+  closeModal() { closeModal(); },
+  askOk() { const r = ask.res; ask.res = null; MODAL = null; renderModal(); if (r) r(true); },
+  openNav() { document.body.classList.add('nav-open'); },
+  closeNav() { document.body.classList.remove('nav-open'); },
+  toggleF() { FOPEN = !FOPEN; render(); },
+  quickF(el) { CF.quick = el.dataset.v; render(); },
+  clearF() { Object.assign(CF, CF0); render(); },
+  kpiGo(el) {
+    Object.assign(CF, CF0, {arch: false}); chamModo = 'chamados';
+    CF[el.dataset.k] = el.dataset.v;
+    if (location.hash === '#/chamados') render(); else location.hash = '#/chamados';
+  },
+  dashP(el) { DP = Number(el.dataset.v) || 30; render(); },
+  logout() { return api('POST', '/api/logout', {}).then(() => { S = null; renderLogin(); }); },
+  csvTickets() {
+    const cols = ['Número','Assunto','Cliente','Tipo de chamado','Prioridade','Status','Responsável','Equipe','SLA','Prazo'];
+    const rows = filteredTickets().map(t => [t.id, t.title, t.client, t.category, t.priority, t.status, t.agent, t.team, SLA_LABEL[t.sla], t.due]);
+    download('chamados.csv', '﻿' + [cols.map(csvEsc).join(';'), ...rows.map(r => r.map(csvEsc).join(';'))].join('\r\n'), 'text/csv;charset=utf-8;');
+  },
+  csvReport() {
+    const list = S.tickets.filter(t => (!G.type || t.category === G.type) && (!G.status || t.status === G.status)).sort((a, b) => a.id - b.id);
+    const cols = ['Número','Assunto','Cliente','Tipo de chamado','Prioridade','Status','Responsável','Equipe','SLA','Prazo'];
+    const rows = list.map(t => [t.id, t.title, t.client, t.category, t.priority, t.status, t.agent, t.team, SLA_LABEL[t.sla], t.due]);
+    download(`relatorio-${slug(G.type || 'todos-os-tipos')}.csv`, '﻿' + [cols.map(csvEsc).join(';'), ...rows.map(r => r.map(csvEsc).join(';'))].join('\r\n'), 'text/csv;charset=utf-8;');
+  },
+  printReport() { window.print(); }
+};
+
+document.addEventListener('submit', e => {
+  const f = e.target; const k = f.dataset && f.dataset.form; if (!k) return;
+  e.preventDefault();
+  if (k === 'login') {
+    const btn = f.querySelector('button[type=submit]'); btn.classList.add('loading');
+    api('POST', '/api/login', {email: f.elements.email.value, password: f.elements.password.value})
+      .then(() => refresh()).then(() => { location.hash = '#/dashboard'; render(); })
+      .catch(err => { btn.classList.remove('loading'); const el = $('#login-err'); if (el) el.textContent = err.message; });
+    return;
+  }
+  if (k === 'gen' || k === 'filter') { FORMS.gen(f); render(); return; }
+  act(() => FORMS[k](f, e.submitter), e.submitter || f.querySelector('button[type=submit]'));
+});
+document.addEventListener('change', e => {
+  const el = e.target; const k = el.dataset && el.dataset.change; if (!k) return;
+  if (k === 'tplChange' || k === 'toggleVisit') { CHANGES[k](el); return; }
+  if (k === 'filter' || k === 'filterRep' || k === 'agTec') { CHANGES[k](el); render(); return; }
+  CHANGES[k](el);
+});
+document.addEventListener('click', e => {
+  document.querySelectorAll('details[open]').forEach(d => { if (!d.contains(e.target)) d.removeAttribute('open'); });
+  const gs = $('.gsearch'); if (gs && !gs.contains(e.target)) { const r = $('#gres'); if (r) r.classList.remove('show'); }
+  if (e.target.id === 'modal') { closeModal(); return; }
+  const el = e.target.closest('[data-act]');
+  if (!el) {
+    const go = e.target.closest('[data-go]');
+    if (go && !e.target.closest('a, button, select, input, textarea, label, details')) location.hash = go.dataset.go;
+    return;
+  }
+  const fn = ACTS[el.dataset.act]; if (!fn) return;
+  if (el.dataset.act === 'csvTickets' || el.dataset.act === 'csvReport' || el.dataset.act === 'printReport') { fn(el); return; }
+  const r = fn(el);
+  if (r && typeof r.then === 'function') r.catch(err => toast(err.message, true));
+});
+document.addEventListener('input', e => {
+  const t = e.target;
+  if (t.dataset && t.dataset.input === 'search') {
+    CF.q = t.value;
+    const list = filteredTickets();
+    const box = $('#ticket-rows'); if (box) box.innerHTML = ticketTable(list);
+    const c = $('#ticket-count'); if (c) c.textContent = `${list.length} chamado(s)`;
+  }
+  if (t.id === 'gsearch') gsearch(t.value);
+});
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    if (MODAL) { closeModal(); return; }
+    document.body.classList.remove('nav-open');
+    const r = $('#gres'); if (r) r.classList.remove('show');
+    document.querySelectorAll('details[open]').forEach(d => d.removeAttribute('open'));
+    return;
+  }
+  if (e.key !== 'Enter') return;
+  if (e.target.id === 'gsearch' && tela('chamados')) {
+    e.preventDefault();
+    Object.assign(CF, CF0, {q: e.target.value.trim(), arch: false}); chamModo = 'chamados';
+    if (location.hash === '#/chamados') render(); else location.hash = '#/chamados';
+    return;
+  }
+  if (e.target.matches && e.target.matches('tr.link[data-go]')) location.hash = e.target.dataset.go;
+});
+/* Menu de ações por linha: posição fixa para não ser cortado pela rolagem da tabela. */
+document.addEventListener('toggle', e => {
+  const d = e.target;
+  if (!d.matches || !d.matches('details.menu') || !d.open) return;
+  const pop = d.querySelector('.menu-pop'), r = d.querySelector('summary').getBoundingClientRect();
+  pop.style.position = 'fixed'; pop.style.left = 'auto';
+  pop.style.right = Math.max(8, innerWidth - r.right) + 'px';
+  pop.style.top = (r.bottom + 6) + 'px';
+  requestAnimationFrame(() => { if (r.bottom + 6 + pop.offsetHeight > innerHeight - 8) pop.style.top = Math.max(8, r.top - pop.offsetHeight - 6) + 'px'; });
+}, true);
+window.addEventListener('scroll', () => document.querySelectorAll('details.menu[open]').forEach(d => d.removeAttribute('open')), {passive: true});
+/* Dica dos gráficos: valor em destaque e rótulo abaixo (texto puro). */
+function fillTip(el) {
+  const t = $('#tip'); t.textContent = '';
+  const b = document.createElement('b'); b.textContent = el.dataset.tip;
+  const s = document.createElement('span'); s.textContent = el.dataset.tipL || '';
+  t.append(b, s); t.classList.add('show');
+}
+function placeTip(x, y) {
+  const t = $('#tip'), w = t.offsetWidth, hh = t.offsetHeight;
+  t.style.left = Math.max(8, Math.min(x + 14, innerWidth - w - 8)) + 'px';
+  t.style.top = (y + 16 + hh > innerHeight ? y - hh - 12 : y + 16) + 'px';
+}
+document.addEventListener('pointermove', e => {
+  const el = e.target.closest ? e.target.closest('[data-tip]') : null;
+  if (!el) { $('#tip').classList.remove('show'); return; }
+  fillTip(el); placeTip(e.clientX, e.clientY);
+});
+document.addEventListener('focusin', e => {
+  const el = e.target.closest ? e.target.closest('[data-tip]') : null;
+  if (!el) return;
+  fillTip(el); const r = el.getBoundingClientRect(); placeTip(r.left + r.width / 2, r.bottom);
+});
+document.addEventListener('focusout', () => $('#tip').classList.remove('show'));
+window.addEventListener('hashchange', () => { if (S) render(); });
+
+(async function boot() {
+  try { await refresh(); if (!location.hash) location.hash = '#/dashboard'; render(); }
+  catch (e) { renderLogin(); }
+})();
+</script>
+</body>
+</html>
