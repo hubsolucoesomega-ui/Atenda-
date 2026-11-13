@@ -1,0 +1,4 @@
+CREATE TABLE IF NOT EXISTS products (id TEXT PRIMARY KEY, name TEXT NOT NULL, description TEXT NOT NULL DEFAULT '', category TEXT NOT NULL DEFAULT '', equipment_name TEXT NOT NULL DEFAULT '', cost REAL NOT NULL DEFAULT 0, price REAL NOT NULL DEFAULT 0, stock_qty REAL NOT NULL DEFAULT 0, min_stock REAL NOT NULL DEFAULT 0, active INTEGER NOT NULL DEFAULT 1, created_at TEXT NOT NULL);
+CREATE INDEX IF NOT EXISTS products_by_name ON products (name);
+CREATE TABLE IF NOT EXISTS catalog_services (id TEXT PRIMARY KEY, name TEXT NOT NULL, price REAL NOT NULL DEFAULT 0, external_code TEXT NOT NULL DEFAULT '', active INTEGER NOT NULL DEFAULT 1, created_at TEXT NOT NULL);
+CREATE INDEX IF NOT EXISTS catalog_services_by_name ON catalog_services (name);
